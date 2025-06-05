@@ -1,0 +1,33 @@
+Background:
+Earth Federation has a plan to migrate onto 1 of the 3 recently detected planets. As a pioneer team,
+we are going to probe into these 3 planets for feasibility analysis. You, titled as the team’s IT
+expert, are expected to build a small software system to record the team’s findings, evaluate these
+gathered factors, and suggest which planet could be the best choice.
+Requirements:
+1. The system needs an UI on which we can input the collected factors from the 3 planets.
+These factors can be oxygen volume, water volume, the hardness of rocks, threatening
+creatures, and so on. We don’t set any limit on them; use your creativity to list whatever
+you think necessary to be considered.
+2. Need another UI to easily view the registered info of these 3 planets.
+3. Support evaluating on these 3 planets, with your own algorithm. You can consider a
+suitable algorithm being able to judge which one is the best choice and explain why. We
+don’t limit you on how to construct the evaluation. Then, present the evaluation result in
+the system on a friendly way.
+4. The system shall support users in 3 different roles.
+• Super Admin, having full CRUD permissions to all the resources in the system.
+• Planet Admin, same as Super Admin, but can only work on one specific planet.
+• Viewer, with ready-only permission, in 2 types:
+o Viewer type 1 can only view the info of planet 1;
+o Viewer type 2 can view both planet 1 and planet 3, but not planet 2.
+Notes:
+[1]. Build the security controls as best as you can; no constraint.
+[2]. No requirement of building a module to register the users in these roles; instead, you
+can use several preset users to simplify your building, to prove how they can work in the
+system safely.
+
+5. It’s not mandatory; however, going with a good UI/UX implementation is a plus point.
+6. Build the system as a web app based on Browser-Server structure.
+7. Frontend: React, JavaScript/TypeScript, Html5, SCSS, and the relevant.
+8. Backend: Rest API or GraphQL running on Microsoft .Net 8 → Asp.Net Core.
+9. A well-written tech specification + a demo (e.g. video) are required.
+10. Finish this test by yourself only
