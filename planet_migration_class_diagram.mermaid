@@ -1,0 +1,349 @@
+classDiagram
+    %% 用户和权限管理
+    class User {
+        +int Id
+        +string Username
+        +string Email
+        +string PasswordHash
+        +string Salt
+        +UserRole Role
+        +int? AssignedPlanetId
+        +DateTime CreatedAt
+        +DateTime UpdatedAt
+        +bool IsActive
+        +__init__(username: str, email: str, password: str, role: UserRole)
+        +ValidatePassword(password: str) bool
+        +UpdatePassword(newPassword: str) void
+        +HasPermission(resource: str, action: str) bool
+    }
+
+    class UserRole {
+        <<enumeration>>
+        SUPER_ADMIN
+        PLANET_ADMIN
+        VIEWER_TYPE_1
+        VIEWER_TYPE_2
+    }
+
+    class Permission {
+        +int Id
+        +UserRole Role
+        +string Resource
+        +string Action
+        +int? PlanetId
+        +__init__(role: UserRole, resource: str, action: str, planetId: int)
+        +CheckAccess(userId: int, resource: str, action: str, planetId: int) bool
+    }
+
+    %% 行星和因子管理
+    class Planet {
+        +int Id
+        +string Name
+        +string Description
+        +string Location
+        +DateTime DiscoveredDate
+        +PlanetStatus Status
+        +List~PlanetFactor~ Factors
+        +List~Evaluation~ Evaluations
+        +DateTime CreatedAt
+        +DateTime UpdatedAt
+        +__init__(name: str, description: str, location: str)
+        +AddFactor(factor: PlanetFactor) void
+        +UpdateFactor(factorId: int, value: object) void
+        +RemoveFactor(factorId: int) void
+        +GetFactorsByCategory(category: FactorCategory) List~PlanetFactor~
+    }
+
+    class PlanetStatus {
+        <<enumeration>>
+        DISCOVERED
+        UNDER_EVALUATION
+        EVALUATED
+        RECOMMENDED
+        REJECTED
+    }
+
+    class PlanetFactor {
+        +int Id
+        +int PlanetId
+        +string FactorName
+        +FactorCategory Category
+        +object Value
+        +string Unit
+        +FactorType DataType
+        +double Weight
+        +string Description
+        +DateTime RecordedAt
+        +string RecordedBy
+        +__init__(planetId: int, factorName: str, category: FactorCategory, value: object)
+        +ValidateValue() bool
+        +NormalizeValue() double
+        +GetDisplayValue() string
+    }
+
+    class FactorCategory {
+        <<enumeration>>
+        ENVIRONMENTAL
+        GEOLOGICAL
+        BIOLOGICAL
+        TECHNICAL
+        CUSTOM
+    }
+
+    class FactorType {
+        <<enumeration>>
+        NUMERIC
+        BOOLEAN
+        TEXT
+        ENUM
+        RANGE
+    }
+
+    %% 评估系统
+    class Evaluation {
+        +int Id
+        +List~int~ PlanetIds
+        +EvaluationAlgorithm Algorithm
+        +Dictionary~string, double~ Weights
+        +List~EvaluationResult~ Results
+        +DateTime CreatedAt
+        +string CreatedBy
+        +EvaluationStatus Status
+        +__init__(planetIds: List~int~, algorithm: EvaluationAlgorithm, weights: Dictionary~string, double~)
+        +Execute() void
+        +GetRecommendation() EvaluationResult
+        +GenerateReport() EvaluationReport
+    }
+
+    class EvaluationResult {
+        +int Id
+        +int EvaluationId
+        +int PlanetId
+        +double TotalScore
+        +Dictionary~string, double~ CategoryScores
+        +int Rank
+        +string Recommendation
+        +List~string~ Strengths
+        +List~string~ Weaknesses
+        +List~string~ Risks
+        +__init__(evaluationId: int, planetId: int)
+        +CalculateScore(factors: List~PlanetFactor~, weights: Dictionary~string, double~) double
+        +GenerateInsights() void
+    }
+
+    class EvaluationAlgorithm {
+        <<enumeration>>
+        AHP_TOPSIS
+        WEIGHTED_AVERAGE
+        FUZZY_LOGIC
+        NEURAL_NETWORK
+    }
+
+    class EvaluationStatus {
+        <<enumeration>>
+        PENDING
+        IN_PROGRESS
+        COMPLETED
+        FAILED
+    }
+
+    class EvaluationReport {
+        +int Id
+        +int EvaluationId
+        +string Title
+        +string Summary
+        +string DetailedAnalysis
+        +List~Chart~ Charts
+        +DateTime GeneratedAt
+        +__init__(evaluationId: int)
+        +GenerateCharts() List~Chart~
+        +ExportToPdf() byte[]
+    }
+
+    %% 数据可视化
+    class Chart {
+        +int Id
+        +string Title
+        +ChartType Type
+        +string Data
+        +string Configuration
+        +__init__(title: str, type: ChartType, data: str)
+        +Render() string
+    }
+
+    class ChartType {
+        <<enumeration>>
+        RADAR
+        BAR
+        LINE
+        PIE
+        SCATTER
+    }
+
+    %% 服务层
+    class AuthenticationService {
+        +Login(username: str, password: str) AuthResult
+        +RefreshToken(refreshToken: str) AuthResult
+        +Logout(userId: int) void
+        +ValidateToken(token: str) bool
+        +GenerateJwtToken(user: User) string
+    }
+
+    class AuthResult {
+        +bool Success
+        +string AccessToken
+        +string RefreshToken
+        +DateTime ExpiresAt
+        +User User
+        +string ErrorMessage
+    }
+
+    class PlanetService {
+        +GetPlanets(userId: int) List~Planet~
+        +GetPlanet(planetId: int, userId: int) Planet
+        +CreatePlanet(planet: Planet, userId: int) Planet
+        +UpdatePlanet(planet: Planet, userId: int) Planet
+        +DeletePlanet(planetId: int, userId: int) bool
+        +CheckAccess(userId: int, planetId: int, action: str) bool
+    }
+
+    class FactorService {
+        +GetFactors(planetId: int, userId: int) List~PlanetFactor~
+        +AddFactor(factor: PlanetFactor, userId: int) PlanetFactor
+        +UpdateFactor(factor: PlanetFactor, userId: int) PlanetFactor
+        +DeleteFactor(factorId: int, userId: int) bool
+        +GetFactorTemplates() List~FactorTemplate~
+    }
+
+    class EvaluationService {
+        +CreateEvaluation(request: EvaluationRequest, userId: int) Evaluation
+        +ExecuteEvaluation(evaluationId: int) EvaluationResult
+        +GetEvaluationHistory(userId: int) List~Evaluation~
+        +GetEvaluationResult(evaluationId: int, userId: int) EvaluationResult
+    }
+
+    class PermissionService {
+        +CheckPermission(userId: int, resource: str, action: str, resourceId: int) bool
+        +GetUserPermissions(userId: int) List~Permission~
+        +HasAccessToPlanet(userId: int, planetId: int) bool
+    }
+
+    %% 数据访问层
+    class UnitOfWork {
+        +IUserRepository Users
+        +IPlanetRepository Planets
+        +IFactorRepository Factors
+        +IEvaluationRepository Evaluations
+        +IPermissionRepository Permissions
+        +BeginTransaction() void
+        +Commit() void
+        +Rollback() void
+        +SaveChanges() int
+    }
+
+    class IUserRepository {
+        <<interface>>
+        +GetById(id: int) User
+        +GetByUsername(username: str) User
+        +Create(user: User) User
+        +Update(user: User) User
+        +Delete(id: int) bool
+    }
+
+    class IPlanetRepository {
+        <<interface>>
+        +GetAll() List~Planet~
+        +GetById(id: int) Planet
+        +GetByUserId(userId: int) List~Planet~
+        +Create(planet: Planet) Planet
+        +Update(planet: Planet) Planet
+        +Delete(id: int) bool
+    }
+
+    class IFactorRepository {
+        <<interface>>
+        +GetByPlanetId(planetId: int) List~PlanetFactor~
+        +GetById(id: int) PlanetFactor
+        +Create(factor: PlanetFactor) PlanetFactor
+        +Update(factor: PlanetFactor) PlanetFactor
+        +Delete(id: int) bool
+    }
+
+    class IEvaluationRepository {
+        <<interface>>
+        +GetAll() List~Evaluation~
+        +GetById(id: int) Evaluation
+        +GetByUserId(userId: int) List~Evaluation~
+        +Create(evaluation: Evaluation) Evaluation
+        +Update(evaluation: Evaluation) Evaluation
+    }
+
+    %% 控制器
+    class AuthController {
+        +AuthenticationService _authService
+        +Login(request: LoginRequest) ActionResult~AuthResult~
+        +RefreshToken(request: RefreshTokenRequest) ActionResult~AuthResult~
+        +Logout() ActionResult
+    }
+
+    class PlanetController {
+        +PlanetService _planetService
+        +GetPlanets() ActionResult~List~Planet~~
+        +GetPlanet(id: int) ActionResult~Planet~
+        +CreatePlanet(request: CreatePlanetRequest) ActionResult~Planet~
+        +UpdatePlanet(id: int, request: UpdatePlanetRequest) ActionResult~Planet~
+        +DeletePlanet(id: int) ActionResult
+    }
+
+    class FactorController {
+        +FactorService _factorService
+        +GetFactors(planetId: int) ActionResult~List~PlanetFactor~~
+        +AddFactor(planetId: int, request: AddFactorRequest) ActionResult~PlanetFactor~
+        +UpdateFactor(planetId: int, factorId: int, request: UpdateFactorRequest) ActionResult~PlanetFactor~
+        +DeleteFactor(planetId: int, factorId: int) ActionResult
+    }
+
+    class EvaluationController {
+        +EvaluationService _evaluationService
+        +CreateEvaluation(request: EvaluationRequest) ActionResult~Evaluation~
+        +GetEvaluationResult(id: int) ActionResult~EvaluationResult~
+        +GetEvaluationHistory() ActionResult~List~Evaluation~~
+    }
+
+    %% 关系定义
+    User ||--o{ Planet : "assigned to (Planet Admin)"
+    User }o--|| UserRole : "has role"
+    Permission }o--|| UserRole : "defines permissions for"
+    Permission }o--o| Planet : "specific to planet (optional)"
+    
+    Planet ||--o{ PlanetFactor : "contains"
+    Planet ||--o{ Evaluation : "evaluated by"
+    PlanetFactor }o--|| FactorCategory : "belongs to"
+    PlanetFactor }o--|| FactorType : "has type"
+    Planet }o--|| PlanetStatus : "has status"
+    
+    Evaluation ||--o{ EvaluationResult : "produces"
+    Evaluation }o--|| EvaluationAlgorithm : "uses algorithm"
+    Evaluation }o--|| EvaluationStatus : "has status"
+    EvaluationResult }o--|| Planet : "evaluates"
+    Evaluation ||--o| EvaluationReport : "generates"
+    EvaluationReport ||--o{ Chart : "contains"
+    Chart }o--|| ChartType : "has type"
+    
+    AuthController --> AuthenticationService : "uses"
+    PlanetController --> PlanetService : "uses"
+    FactorController --> FactorService : "uses"
+    EvaluationController --> EvaluationService : "uses"
+    
+    AuthenticationService --> UnitOfWork : "uses"
+    PlanetService --> UnitOfWork : "uses"
+    FactorService --> UnitOfWork : "uses"
+    EvaluationService --> UnitOfWork : "uses"
+    PlanetService --> PermissionService : "uses"
+    FactorService --> PermissionService : "uses"
+    EvaluationService --> PermissionService : "uses"
+    
+    UnitOfWork --> IUserRepository : "contains"
+    UnitOfWork --> IPlanetRepository : "contains"
+    UnitOfWork --> IFactorRepository : "contains"
+    UnitOfWork --> IEvaluationRepository : "contains"

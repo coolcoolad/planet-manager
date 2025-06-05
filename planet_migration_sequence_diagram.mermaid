@@ -1,0 +1,205 @@
+sequenceDiagram
+    participant C as Client(React)
+    participant AC as AuthController
+    participant AS as AuthenticationService
+    participant PC as PlanetController
+    participant PS as PlanetService
+    participant FC as FactorController
+    participant FS as FactorService
+    participant EC as EvaluationController
+    participant ES as EvaluationService
+    participant PMS as PermissionService
+    participant UOW as UnitOfWork
+    participant DB as Database
+
+    Note over C,DB: 用户登录流程
+    C->>AC: POST /api/auth/login {username, password}
+    AC->>AS: Login(username, password)
+    AS->>UOW: Users.GetByUsername(username)
+    UOW->>DB: SELECT * FROM Users WHERE Username = ?
+    DB-->>UOW: User data
+    UOW-->>AS: User object
+    AS->>AS: ValidatePassword(password)
+    AS->>AS: GenerateJwtToken(user)
+    AS-->>AC: AuthResult {token, user}
+    AC-->>C: 200 OK {accessToken, refreshToken, user}
+
+    Note over C,DB: 获取行星列表流程
+    C->>PC: GET /api/planets [Authorization: Bearer token]
+    PC->>PS: GetPlanets(userId)
+    PS->>PMS: HasAccessToPlanet(userId, planetId)
+    PMS->>UOW: Permissions.CheckAccess(userId, "Planet", "Read", planetId)
+    UOW->>DB: SELECT * FROM Permissions WHERE UserId = ? AND Resource = 'Planet'
+    DB-->>UOW: Permission records
+    UOW-->>PMS: Permission list
+    PMS-->>PS: Access result
+    PS->>UOW: Planets.GetByUserId(userId)
+    UOW->>DB: SELECT * FROM Planets WHERE Id IN (accessible_planet_ids)
+    DB-->>UOW: Planet records
+    UOW-->>PS: Planet list
+    PS-->>PC: Filtered planet list
+    PC-->>C: 200 OK [Planet objects]
+
+    Note over C,DB: 创建行星流程
+    C->>PC: POST /api/planets {name, description, location}
+    PC->>PS: CreatePlanet(planet, userId)
+    PS->>PMS: CheckPermission(userId, "Planet", "Create", null)
+    PMS-->>PS: Permission granted
+    PS->>UOW: BeginTransaction()
+    PS->>UOW: Planets.Create(planet)
+    UOW->>DB: INSERT INTO Planets (Name, Description, Location, CreatedAt)
+    DB-->>UOW: New planet ID
+    UOW-->>PS: Created planet
+    PS->>UOW: Commit()
+    PS-->>PC: Created planet
+    PC-->>C: 201 Created {planet}
+
+    Note over C,DB: 添加因子数据流程
+    C->>FC: POST /api/planets/{planetId}/factors {factorName, category, value}
+    FC->>FS: AddFactor(factor, userId)
+    FS->>PMS: HasAccessToPlanet(userId, planetId)
+    PMS-->>FS: Access granted
+    FS->>UOW: Factors.Create(factor)
+    UOW->>DB: INSERT INTO PlanetFactors (PlanetId, FactorName, Category, Value, RecordedAt)
+    DB-->>UOW: New factor ID
+    UOW-->>FS: Created factor
+    FS->>FS: ValidateValue()
+    FS-->>FC: Created factor
+    FC-->>C: 201 Created {factor}
+
+    Note over C,DB: 更新因子数据流程
+    C->>FC: PUT /api/planets/{planetId}/factors/{factorId} {value}
+    FC->>FS: UpdateFactor(factor, userId)
+    FS->>PMS: CheckPermission(userId, "Factor", "Update", planetId)
+    PMS-->>FS: Permission granted
+    FS->>UOW: Factors.GetById(factorId)
+    UOW->>DB: SELECT * FROM PlanetFactors WHERE Id = ?
+    DB-->>UOW: Factor record
+    UOW-->>FS: Existing factor
+    FS->>FS: ValidateValue()
+    FS->>UOW: Factors.Update(factor)
+    UOW->>DB: UPDATE PlanetFactors SET Value = ?, UpdatedAt = ? WHERE Id = ?
+    DB-->>UOW: Updated rows count
+    UOW-->>FS: Updated factor
+    FS-->>FC: Updated factor
+    FC-->>C: 200 OK {factor}
+
+    Note over C,DB: 执行行星评估流程
+    C->>EC: POST /api/evaluations {planetIds, algorithm, weights}
+    EC->>ES: CreateEvaluation(request, userId)
+    ES->>PMS: CheckPermission(userId, "Evaluation", "Create", null)
+    PMS-->>ES: Permission granted
+    ES->>UOW: BeginTransaction()
+    ES->>UOW: Evaluations.Create(evaluation)
+    UOW->>DB: INSERT INTO Evaluations (PlanetIds, Algorithm, Weights, CreatedAt, CreatedBy)
+    DB-->>UOW: New evaluation ID
+    UOW-->>ES: Created evaluation
+    ES->>ES: ExecuteEvaluation(evaluationId)
+    
+    loop For each planet
+        ES->>UOW: Factors.GetByPlanetId(planetId)
+        UOW->>DB: SELECT * FROM PlanetFactors WHERE PlanetId = ?
+        DB-->>UOW: Factor records
+        UOW-->>ES: Planet factors
+        ES->>ES: CalculateScore(factors, weights)
+        ES->>UOW: EvaluationResults.Create(result)
+        UOW->>DB: INSERT INTO EvaluationResults (EvaluationId, PlanetId, TotalScore, CategoryScores)
+        DB-->>UOW: Result ID
+    end
+    
+    ES->>ES: GenerateRecommendation()
+    ES->>UOW: Commit()
+    ES-->>EC: Evaluation with results
+    EC-->>C: 201 Created {evaluation}
+
+    Note over C,DB: 获取评估结果流程
+    C->>EC: GET /api/evaluations/{id}
+    EC->>ES: GetEvaluationResult(evaluationId, userId)
+    ES->>PMS: CheckPermission(userId, "Evaluation", "Read", evaluationId)
+    PMS-->>ES: Permission granted
+    ES->>UOW: Evaluations.GetById(evaluationId)
+    UOW->>DB: SELECT e.*, er.* FROM Evaluations e JOIN EvaluationResults er ON e.Id = er.EvaluationId WHERE e.Id = ?
+    DB-->>UOW: Evaluation with results
+    UOW-->>ES: Complete evaluation data
+    ES->>ES: GenerateReport()
+    ES-->>EC: Evaluation result with report
+    EC-->>C: 200 OK {evaluationResult, report, charts}
+
+    Note over C,DB: 获取用户权限流程
+    C->>AC: GET /api/users/permissions
+    AC->>PMS: GetUserPermissions(userId)
+    PMS->>UOW: Permissions.GetByUserId(userId)
+    UOW->>DB: SELECT * FROM Permissions WHERE UserId = ? OR Role = (SELECT Role FROM Users WHERE Id = ?)
+    DB-->>UOW: Permission records
+    UOW-->>PMS: User permissions
+    PMS-->>AC: Permission list
+    AC-->>C: 200 OK [permissions]
+
+    Note over C,DB: 删除行星流程
+    C->>PC: DELETE /api/planets/{id}
+    PC->>PS: DeletePlanet(planetId, userId)
+    PS->>PMS: CheckPermission(userId, "Planet", "Delete", planetId)
+    PMS-->>PS: Permission granted
+    PS->>UOW: BeginTransaction()
+    PS->>UOW: Factors.GetByPlanetId(planetId)
+    UOW->>DB: SELECT Id FROM PlanetFactors WHERE PlanetId = ?
+    DB-->>UOW: Factor IDs
+    UOW-->>PS: Factor list
+    
+    loop For each factor
+        PS->>UOW: Factors.Delete(factorId)
+        UOW->>DB: DELETE FROM PlanetFactors WHERE Id = ?
+    end
+    
+    PS->>UOW: Planets.Delete(planetId)
+    UOW->>DB: DELETE FROM Planets WHERE Id = ?
+    DB-->>UOW: Deleted rows count
+    UOW-->>PS: Success result
+    PS->>UOW: Commit()
+    PS-->>PC: Deletion success
+    PC-->>C: 204 No Content
+
+    Note over C,DB: Token刷新流程
+    C->>AC: POST /api/auth/refresh {refreshToken}
+    AC->>AS: RefreshToken(refreshToken)
+    AS->>AS: ValidateRefreshToken(refreshToken)
+    AS->>UOW: Users.GetById(userId)
+    UOW->>DB: SELECT * FROM Users WHERE Id = ?
+    DB-->>UOW: User data
+    UOW-->>AS: User object
+    AS->>AS: GenerateJwtToken(user)
+    AS-->>AC: New AuthResult
+    AC-->>C: 200 OK {newAccessToken, newRefreshToken}
+
+    Note over C,DB: 错误处理流程
+    C->>PC: GET /api/planets/{invalidId}
+    PC->>PS: GetPlanet(invalidId, userId)
+    PS->>PMS: HasAccessToPlanet(userId, invalidId)
+    PMS-->>PS: Access denied
+    PS-->>PC: Forbidden exception
+    PC-->>C: 403 Forbidden {error: "Access denied"}
+
+    Note over C,DB: 数据验证流程
+    C->>FC: POST /api/planets/{planetId}/factors {invalid data}
+    FC->>FS: AddFactor(invalidFactor, userId)
+    FS->>FS: ValidateValue()
+    FS-->>FC: Validation exception
+    FC-->>C: 400 Bad Request {validationErrors}
+
+    Note over C,DB: 批量操作流程
+    C->>FC: POST /api/planets/{planetId}/factors/batch [multiple factors]
+    FC->>FS: AddFactorsBatch(factors, userId)
+    FS->>PMS: HasAccessToPlanet(userId, planetId)
+    PMS-->>FS: Access granted
+    FS->>UOW: BeginTransaction()
+    
+    loop For each factor
+        FS->>FS: ValidateValue()
+        FS->>UOW: Factors.Create(factor)
+        UOW->>DB: INSERT INTO PlanetFactors (...)
+    end
+    
+    FS->>UOW: SaveChanges()
+    FS->>UOW: Commit()
+    FS-->>FC: Created factors list
+    FC-->>C: 201 Created [factors]
