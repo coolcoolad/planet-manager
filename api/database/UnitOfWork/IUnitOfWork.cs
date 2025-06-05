@@ -6,7 +6,7 @@ public interface IUnitOfWork : IDisposable
 {
     IUserRepository Users { get; }
     IPlanetRepository Planets { get; }
-    IFactorRepository Factors { get; }
+    IPlanetFactorRepository PlanetFactors { get; }
     IEvaluationRepository Evaluations { get; }
     IPermissionRepository Permissions { get; }
     

@@ -21,6 +21,8 @@ public class Evaluation
     [MaxLength(100)]
     public string CreatedBy { get; set; } = string.Empty;
     
+    public int? CreatedByUserId { get; set; }
+    
     public EvaluationStatus Status { get; set; } = EvaluationStatus.PENDING;
 
     // Navigation properties

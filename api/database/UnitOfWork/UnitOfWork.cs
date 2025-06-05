@@ -13,12 +13,15 @@ public class UnitOfWork : IUnitOfWork
     {
         _context = context;
         Users = new UserRepository(_context);
-        // Initialize other repositories here
+        Planets = new PlanetRepository(_context);
+        PlanetFactors = new PlanetFactorRepository(_context);
+        Evaluations = new EvaluationRepository(_context);
+        Permissions = new PermissionRepository(_context);
     }
 
     public IUserRepository Users { get; }
     public IPlanetRepository Planets { get; }
-    public IFactorRepository Factors { get; }
+    public IPlanetFactorRepository PlanetFactors { get; }
     public IEvaluationRepository Evaluations { get; }
     public IPermissionRepository Permissions { get; }
 
