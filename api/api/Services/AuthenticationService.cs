@@ -24,8 +24,7 @@ public class AuthenticationService
         try
         {
             var user = await _unitOfWork.Users.GetByUsernameAsync(username);
-            // for test do not use !user.ValidatePassword(password)
-            if (user == null || !user.IsActive)
+            if (user == null || !user.ValidatePassword(password) || !user.IsActive)
             {
                 return new AuthResult { Success = false, ErrorMessage = "Invalid credentials" };
             }
@@ -83,6 +82,49 @@ public class AuthenticationService
         }
     }
 
+    public async Task<AuthResult> RegisterAsync(string username, string email, string password)
+    {
+        try
+        {
+            // Check if user already exists
+            var existingUser = await _unitOfWork.Users.GetByUsernameAsync(username);
+            if (existingUser != null)
+            {
+                return new AuthResult { Success = false, ErrorMessage = "Username already exists" };
+            }
+
+            // Create new user
+            var user = new User
+            {
+                Username = username,
+                Email = email,
+                Role = database.Enums.UserRole.VIEWER_TYPE_1, // Default role
+                IsActive = true
+            };
+            
+            user.UpdatePassword(password);
+            
+            var createdUser = await _unitOfWork.Users.CreateAsync(user);
+            await _unitOfWork.SaveChangesAsync();
+
+            var accessToken = GenerateJwtToken(createdUser);
+            var refreshToken = GenerateRefreshToken();
+
+            return new AuthResult
+            {
+                Success = true,
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                ExpiresAt = DateTime.UtcNow.AddHours(1),
+                User = createdUser
+            };
+        }
+        catch (Exception ex)
+        {
+            return new AuthResult { Success = false, ErrorMessage = ex.Message };
+        }
+    }
+
     public string GenerateJwtToken(User user)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"] ?? "default-secret-key"));
@@ -123,7 +165,7 @@ public class AuthenticationService
             {
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidateLifetime = false, // For refresh tokens
+                ValidateLifetime = false,
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = _configuration["Jwt:Issuer"],
                 ValidAudience = _configuration["Jwt:Audience"],
