@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
 using database.Enums;
 
@@ -19,7 +20,7 @@ public class Evaluation
     public DateTime CreatedAt { get; set; }
     
     [MaxLength(100)]
-    public string CreatedBy { get; set; } = string.Empty;
+    public string? CreatedBy { get; set; }
     
     public int? CreatedByUserId { get; set; }
     
@@ -31,12 +32,14 @@ public class Evaluation
     public User? CreatedByUser { get; set; }
 
     // Helper properties
+    [NotMapped]
     public List<int> PlanetIds
     {
         get => string.IsNullOrEmpty(PlanetIdsJson) ? new() : JsonSerializer.Deserialize<List<int>>(PlanetIdsJson) ?? new();
         set => PlanetIdsJson = JsonSerializer.Serialize(value);
     }
 
+    [NotMapped]
     public Dictionary<string, double> Weights
     {
         get => string.IsNullOrEmpty(WeightsJson) ? new() : JsonSerializer.Deserialize<Dictionary<string, double>>(WeightsJson) ?? new();

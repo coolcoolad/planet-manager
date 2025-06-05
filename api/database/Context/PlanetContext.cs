@@ -60,6 +60,7 @@ public class PlanetContext : DbContext
                   .HasForeignKey(e => e.PlanetId)
                   .OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => new { e.PlanetId, e.FactorName });
+            entity.Ignore(e => e.Value);
         });
 
         // Evaluation configurations
@@ -68,9 +69,10 @@ public class PlanetContext : DbContext
             entity.HasKey(e => e.Id);
             entity.HasOne(e => e.CreatedByUser)
                   .WithMany(u => u.CreatedEvaluations)
-                  .HasForeignKey(e => e.CreatedBy)
-                  .HasPrincipalKey(u => u.Username)
+                  .HasForeignKey(e => e.CreatedByUserId)
                   .OnDelete(DeleteBehavior.SetNull);
+            entity.Ignore(e => e.PlanetIds);
+            entity.Ignore(e => e.Weights);
         });
 
         // EvaluationResult configurations
@@ -85,6 +87,10 @@ public class PlanetContext : DbContext
                   .WithMany(p => p.EvaluationResults)
                   .HasForeignKey(e => e.PlanetId)
                   .OnDelete(DeleteBehavior.Cascade);
+            entity.Ignore(e => e.CategoryScores);
+            entity.Ignore(e => e.Strengths);
+            entity.Ignore(e => e.Weaknesses);
+            entity.Ignore(e => e.Risks);
         });
 
         // EvaluationReport configurations

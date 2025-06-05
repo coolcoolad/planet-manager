@@ -1,0 +1,4 @@
+cd database
+dotnet ef migrations list -v -s ../api
+dotnet ef migrations add initTables -v -s ../api
+dotnet ef database update -v -s ../api

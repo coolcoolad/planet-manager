@@ -191,3 +191,5 @@ Thumbs.db
 
 # Windows shortcuts
 *.lnk
+
+appsettings.*
