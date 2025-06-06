@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using database.Enums;
 
 namespace database.Entities;
@@ -33,6 +34,8 @@ public class User
 
     // Navigation properties
     public Planet? AssignedPlanet { get; set; }
+    
+    [JsonIgnore]
     public List<Evaluation> CreatedEvaluations { get; set; } = new();
 
     public bool ValidatePassword(string password)

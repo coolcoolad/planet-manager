@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using database.Enums;
 
 namespace database.Entities;
@@ -29,6 +30,8 @@ public class Evaluation
     // Navigation properties
     public List<EvaluationResult> Results { get; set; } = new();
     public EvaluationReport? Report { get; set; }
+    
+    [JsonIgnore]
     public User? CreatedByUser { get; set; }
 
     // Helper properties
