@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from './components/layout/Layout';
 import { Dashboard } from './components/dashboard/Dashboard';
-import { PlanetsOverview, PlanetDetail } from './components/planets';
+import { PlanetsOverview, PlanetDetail, PlanetEditForm, PlanetNewForm } from './components/planets';
 import { EvaluationForm } from './components/evaluation/EvaluationForm';
 import { FactorForm } from './components/data-input/FactorForm';
 import { LoginForm } from './components/auth/LoginForm';
@@ -75,9 +75,15 @@ export const App: React.FC = () => {
         return <Dashboard user={user} onNavigate={handleNavigate} />;
       
       case currentRoute.startsWith('/planets/'):
+        if (currentRoute.startsWith('/planets/new')) {
+          return <PlanetNewForm user={user} onNavigate={handleNavigate} />;
+        }
         const planetId = currentRoute.split('/')[2];
+        if (currentRoute.endsWith('/edit')) {
+          return <PlanetEditForm user={user} planetId={planetId} onNavigate={handleNavigate} />;
+        }
         return <PlanetDetail user={user} planetId={planetId} onNavigate={handleNavigate} />;
-      
+
       case currentRoute === '/planets':
         return <PlanetsOverview user={user} onNavigate={handleNavigate} />;
       

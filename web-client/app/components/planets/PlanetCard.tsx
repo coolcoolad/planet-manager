@@ -84,14 +84,14 @@ export const PlanetCard: React.FC<PlanetCardProps> = ({
               Edit
             </button>
           )}
-          {user && (
+          {/* {user && (
             <button
               onClick={onEvaluate}
               className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors"
             >
               Evaluate
             </button>
-          )}
+          )} */}
         </div>
       </div>
     );
@@ -144,14 +144,14 @@ export const PlanetCard: React.FC<PlanetCardProps> = ({
             Edit
           </button>
         )}
-        {user && (
+        {/* {user && (
           <button
             onClick={onEvaluate}
             className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm transition-colors"
           >
             Evaluate
           </button>
-        )}
+        )} */}
       </div>
     </div>
   );

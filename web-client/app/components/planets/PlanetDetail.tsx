@@ -99,12 +99,12 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
       <div className="text-center py-12">
         <span className="text-6xl">❌</span>
         <h3 className="text-xl font-medium text-gray-900 mt-4">{error || 'Planet not found'}</h3>
-        <button
+        {/* <button
           onClick={() => onNavigate('/planets')}
           className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
         >
           Back to Planets
-        </button>
+        </button> */}
       </div>
     );
   }
@@ -115,12 +115,12 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center space-x-4">
-            <button
+            {/* <button
               onClick={() => onNavigate('/planets')}
               className="text-gray-500 hover:text-gray-700"
             >
               ← Back
-            </button>
+            </button> */}
             <div>
               <div className="flex items-center space-x-3">
                 <span className="text-3xl">🪐</span>
@@ -141,9 +141,9 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
                 onClick={() => onNavigate(`/planets/${planet.id}/edit`)}
                 className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md transition-colors"
               >
-                Edit Planet
+                Edit
               </button>
-              <button
+              {/* <button
                 onClick={() => onNavigate(`/data-input?planetId=${planet.id}`)}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
               >
@@ -154,7 +154,7 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-colors"
               >
                 Evaluate
-              </button>
+              </button> */}
             </div>
           )}
         </div>
@@ -243,14 +243,14 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium text-gray-900">Planet Factors</h3>
-                {user && (
+                {/* {user && (
                   <button
                     onClick={() => onNavigate(`/data-input?planetId=${planet.id}`)}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm transition-colors"
                   >
                     Add New Factor
                   </button>
-                )}
+                )} */}
               </div>
 
               {factors.length === 0 ? (
@@ -299,14 +299,14 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium text-gray-900">Evaluation Results</h3>
-                {user && (
+                {/* {user && (
                   <button
                     onClick={() => onNavigate(`/evaluation/new?planets=${planet.id}`)}
                     className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm transition-colors"
                   >
                     Start New Evaluation
                   </button>
-                )}
+                )} */}
               </div>
 
               {(!planet.evaluationResults || planet.evaluationResults.length === 0) ? (
