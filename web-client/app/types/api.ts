@@ -37,13 +37,6 @@ export enum PlanetStatus {
   Deleted = 4
 }
 
-export enum UserRole {
-  Guest = 0,
-  User = 1,
-  Admin = 2,
-  SuperAdmin = 3
-}
-
 export enum ChartType {
   Bar = 0,
   Line = 1,
@@ -120,7 +113,6 @@ export interface User {
   email: string;
   passwordHash: string;
   salt: string;
-  role: UserRole;
   assignedPlanetId?: number;
   createdAt: string;
   updatedAt: string;
@@ -218,7 +210,6 @@ export interface Chart {
 
 export interface Permission {
   id: number;
-  role: UserRole;
   resource: string;
   action: string;
   planetId?: number;

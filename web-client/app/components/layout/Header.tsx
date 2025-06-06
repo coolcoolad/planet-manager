@@ -43,9 +43,6 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
           {user && (
             <div className="flex items-center space-x-2">
               <span className="text-sm">{user.username}</span>
-              <span className={`px-2 py-1 rounded text-xs ${getRoleDisplay(user.role).class}`}>
-                {getRoleDisplay(user.role).text}
-              </span>
             </div>
           )}
           <button

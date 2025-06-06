@@ -38,8 +38,23 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onError }) => {
     }
   };
 
-  const handleDemoLogin = (demoUser: User) => {
-    onLogin(demoUser, 'demo_token');
+  const handleDemoLogin = async (username: string, password: string) => {
+    setLoading(true);
+    
+    try {
+      const result = await authService.login({ username, password });
+      
+      if (result.success && result.user && result.accessToken) {
+        onLogin(result.user, result.accessToken);
+      } else {
+        onError(result.errorMessage || 'Demo login failed');
+      }
+    } catch (error) {
+      console.error('Demo login error:', error);
+      onError('Demo login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -95,38 +110,19 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onError }) => {
           <p className="text-sm text-gray-600 mb-3 text-center">Demo Accounts:</p>
           <div className="space-y-2">
             <button
-              onClick={() => handleDemoLogin({
-                id: 1,
-                username: 'demo_admin',
-                email: 'admin@earthfed.gov',
-                passwordHash: '',
-                salt: '',
-                role: 3, // Super Admin
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                isActive: true
-              })}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-1 px-3 rounded-md text-sm transition-colors"
+              onClick={() => handleDemoLogin('admin', 'password123')}
+              disabled={loading}
+              className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white py-1 px-3 rounded-md text-sm transition-colors"
             >
-              Demo: Super Admin
+              Demo: admin
             </button>
             
             <button
-              onClick={() => handleDemoLogin({
-                id: 2,
-                username: 'demo_viewer',
-                email: 'viewer@earthfed.gov',
-                passwordHash: '',
-                salt: '',
-                role: 1, // User
-                assignedPlanetId: 1,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                isActive: true
-              })}
-              className="w-full bg-gray-600 hover:bg-gray-700 text-white py-1 px-3 rounded-md text-sm transition-colors"
+              onClick={() => handleDemoLogin('viewer_type1', 'password123')}
+              disabled={loading}
+              className="w-full bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white py-1 px-3 rounded-md text-sm transition-colors"
             >
-              Demo: Viewer
+              Demo: viewer_type1
             </button>
           </div>
         </div>

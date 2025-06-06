@@ -1,5 +1,5 @@
 import React from 'react';
-import { Planet, PlanetStatus, User, UserRole } from '../../types/api';
+import { Planet, PlanetStatus, User } from '../../types/api';
 
 interface PlanetCardProps {
   planet: Planet;
@@ -39,9 +39,6 @@ export const PlanetCard: React.FC<PlanetCardProps> = ({
     return statusMap[status] || 'Unknown';
   };
 
-  const canEdit = user && (user.role >= UserRole.Admin || user.assignedPlanetId === planet.id);
-  const canEvaluate = user && user.role >= UserRole.User;
-
   const getKeyMetrics = () => {
     if (!planet.factors || planet.factors.length === 0) {
       return [{ label: 'No data available', value: '-' }];
@@ -79,7 +76,7 @@ export const PlanetCard: React.FC<PlanetCardProps> = ({
           >
             View Details
           </button>
-          {canEdit && (
+          {user && (
             <button
               onClick={onEdit}
               className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm transition-colors"
@@ -87,7 +84,7 @@ export const PlanetCard: React.FC<PlanetCardProps> = ({
               Edit
             </button>
           )}
-          {canEvaluate && (
+          {user && (
             <button
               onClick={onEvaluate}
               className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors"
@@ -139,7 +136,7 @@ export const PlanetCard: React.FC<PlanetCardProps> = ({
         >
           View Details
         </button>
-        {canEdit && (
+        {user && (
           <button
             onClick={onEdit}
             className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded text-sm transition-colors"
@@ -147,7 +144,7 @@ export const PlanetCard: React.FC<PlanetCardProps> = ({
             Edit
           </button>
         )}
-        {canEvaluate && (
+        {user && (
           <button
             onClick={onEvaluate}
             className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm transition-colors"

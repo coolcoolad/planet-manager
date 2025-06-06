@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Planet, User, UserRole } from '../../types/api';
+import { Planet, User } from '../../types/api';
 import { planetService } from '../../services';
 import { PlanetCard } from './PlanetCard';
 
@@ -51,22 +51,12 @@ export const PlanetOverview: React.FC<PlanetOverviewProps> = ({ user, onNavigate
     setFilteredPlanets(filtered);
   }, [planets, searchTerm, statusFilter]);
 
-  const canCreatePlanet = user && user.role >= UserRole.Admin;
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Planets Overview</h1>
-        {canCreatePlanet && (
+        {user && (
           <button
             onClick={() => onNavigate('/planets/new')}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
