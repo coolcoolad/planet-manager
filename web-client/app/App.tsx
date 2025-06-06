@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from './components/layout/Layout';
 import { Dashboard } from './components/dashboard/Dashboard';
-import { PlanetOverview } from './components/planets/PlanetOverview';
+import { PlanetsOverview, PlanetDetail } from './components/planets';
 import { EvaluationForm } from './components/evaluation/EvaluationForm';
 import { FactorForm } from './components/data-input/FactorForm';
 import { LoginForm } from './components/auth/LoginForm';
@@ -69,14 +69,19 @@ export const App: React.FC = () => {
   };
 
   const renderContent = () => {
-    switch (currentRoute) {
-      case '/dashboard':
+    console.log('Rendering content for route:', currentRoute);
+    switch (true) {
+      case currentRoute === '/dashboard':
         return <Dashboard user={user} onNavigate={handleNavigate} />;
       
-      case '/planets':
-        return <PlanetOverview user={user} onNavigate={handleNavigate} />;
+      case currentRoute.startsWith('/planets/'):
+        const planetId = currentRoute.split('/')[2];
+        return <PlanetDetail user={user} planetId={planetId} onNavigate={handleNavigate} />;
       
-      case '/data-input':
+      case currentRoute === '/planets':
+        return <PlanetsOverview user={user} onNavigate={handleNavigate} />;
+      
+      case currentRoute === '/data-input':
         return (
           <FactorForm
             user={user}
@@ -88,7 +93,7 @@ export const App: React.FC = () => {
           />
         );
       
-      case '/evaluation':
+      case currentRoute === '/evaluation':
         return (
           <EvaluationForm
             onSuccess={(evaluationId) => {

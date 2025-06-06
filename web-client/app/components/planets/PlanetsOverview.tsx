@@ -8,7 +8,7 @@ interface PlanetOverviewProps {
   onNavigate: (route: string) => void;
 }
 
-export const PlanetOverview: React.FC<PlanetOverviewProps> = ({ user, onNavigate }) => {
+export const PlanetsOverview: React.FC<PlanetOverviewProps> = ({ user, onNavigate }) => {
   const [planets, setPlanets] = useState<Planet[]>([]);
   const [filteredPlanets, setFilteredPlanets] = useState<Planet[]>([]);
   const [loading, setLoading] = useState(true);
