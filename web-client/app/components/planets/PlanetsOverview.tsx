@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Planet, User } from '../../types/api';
 import { planetService } from '../../services';
 import { PlanetCard } from './PlanetCard';
+import { ConfirmDialog } from '../common/ConfirmDialog';
 
 interface PlanetOverviewProps {
   user?: User;
@@ -15,6 +16,7 @@ export const PlanetsOverview: React.FC<PlanetOverviewProps> = ({ user, onNavigat
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; planetId?: number; planetName?: string }>({ isOpen: false });
 
   useEffect(() => {
     const fetchPlanets = async () => {
@@ -50,6 +52,30 @@ export const PlanetsOverview: React.FC<PlanetOverviewProps> = ({ user, onNavigat
 
     setFilteredPlanets(filtered);
   }, [planets, searchTerm, statusFilter]);
+
+  const handleDeletePlanet = async (planetId: number) => {
+    const planet = planets.find(p => p.id === planetId);
+    setDeleteConfirm({ 
+      isOpen: true, 
+      planetId, 
+      planetName: planet?.name 
+    });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm.planetId) return;
+
+    try {
+      await planetService.deletePlanet(deleteConfirm.planetId);
+      setPlanets(prev => prev.filter(planet => planet.id !== deleteConfirm.planetId));
+      setFilteredPlanets(prev => prev.filter(planet => planet.id !== deleteConfirm.planetId));
+    } catch (error) {
+      console.error('Failed to delete planet:', error);
+      alert('Failed to delete planet. Please try again.');
+    } finally {
+      setDeleteConfirm({ isOpen: false });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -129,10 +155,22 @@ export const PlanetsOverview: React.FC<PlanetOverviewProps> = ({ user, onNavigat
               onViewDetails={() => onNavigate(`/planets/${planet.id}`)}
               onEdit={() => onNavigate(`/planets/${planet.id}/edit`)}
               onEvaluate={() => onNavigate(`/evaluation/new?planets=${planet.id}`)}
+              onDelete={() => handleDeletePlanet(planet.id)}
             />
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        title="Delete Planet"
+        message={`Are you sure you want to delete "${deleteConfirm.planetName}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm({ isOpen: false })}
+        type="danger"
+      />
     </div>
   );
 };

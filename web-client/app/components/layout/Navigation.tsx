@@ -11,7 +11,7 @@ export const Navigation: React.FC<NavigationProps> = ({ user, activeRoute, onNav
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
     { path: '/planets', label: 'Planets', icon: '🪐' },
-    { path: '/data-input', label: 'Add Factor', icon: '📝' },
+    // { path: '/Factors', label: 'Factors', icon: '📝' },
     { path: '/evaluation', label: 'Evaluation', icon: '⚖️' },
     { path: '/settings', label: 'Settings', icon: '⚙️' },
   ];

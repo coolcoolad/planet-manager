@@ -34,12 +34,12 @@ export const FactorForm: React.FC<FactorFormProps> = ({
       try {
         const data = await planetService.getAllPlanets();
         // Filter planets based on user permissions
-        const accessiblePlanets = data.filter(planet => {
-          // if (user?.role === 3) return true; // Super Admin
-          // if (user?.role === 2) return user.assignedPlanetId === planet.id; // Planet Admin
-          return user?.assignedPlanetId === planet.id; // Viewer
-        });
-        setPlanets(accessiblePlanets);
+        // const accessiblePlanets = data.filter(planet => {
+        //   if (user?.role === 3) return true; // Super Admin
+        //   if (user?.role === 2) return user.assignedPlanetId === planet.id; // Planet Admin
+        //   return user?.assignedPlanetId === planet.id; // Viewer
+        // });
+        setPlanets(data);
       } catch (error) {
         console.error('Failed to fetch planets:', error);
         setError('Failed to load planets');

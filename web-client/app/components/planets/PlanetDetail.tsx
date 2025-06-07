@@ -14,6 +14,8 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'factors' | 'evaluations'>('overview');
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const fetchPlanetData = async () => {
@@ -86,6 +88,22 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
     }, {} as Record<string, PlanetFactor[]>);
   };
 
+  const handleDelete = async () => {
+    if (!planet || deleting) return;
+    
+    try {
+      setDeleting(true);
+      await planetService.deletePlanet(planet.id);
+      onNavigate('/planets');
+    } catch (err) {
+      setError('Failed to delete planet');
+      console.error('Error deleting planet:', err);
+    } finally {
+      setDeleting(false);
+      setDeleteConfirmOpen(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -143,8 +161,15 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
               >
                 Edit
               </button>
+              <button
+                onClick={() => setDeleteConfirmOpen(true)}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors"
+                disabled={deleting}
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
               {/* <button
-                onClick={() => onNavigate(`/data-input?planetId=${planet.id}`)}
+                onClick={() => onNavigate(`/Factors?planetId=${planet.id}`)}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
               >
                 Add Factor
@@ -245,7 +270,7 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
                 <h3 className="text-lg font-medium text-gray-900">Planet Factors</h3>
                 {/* {user && (
                   <button
-                    onClick={() => onNavigate(`/data-input?planetId=${planet.id}`)}
+                    onClick={() => onNavigate(`/Factors?planetId=${planet.id}`)}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm transition-colors"
                   >
                     Add New Factor
@@ -340,6 +365,34 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Delete Planet</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete "{planet?.name}"? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteConfirmOpen(false)}
+                className="px-4 py-2 text-gray-500 hover:text-gray-700 transition-colors"
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors"
+                disabled={deleting}
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -3,7 +3,7 @@ import { Layout } from './components/layout/Layout';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { PlanetsOverview, PlanetDetail, PlanetEditForm, PlanetNewForm } from './components/planets';
 import { EvaluationForm } from './components/evaluation/EvaluationForm';
-import { FactorForm } from './components/data-input/FactorForm';
+import { FactorForm } from './components/factors/FactorForm';
 import { LoginForm } from './components/auth/LoginForm';
 import { User } from './types/api';
 import { apiClient, authService } from './services';
@@ -87,7 +87,7 @@ export const App: React.FC = () => {
       case currentRoute === '/planets':
         return <PlanetsOverview user={user} onNavigate={handleNavigate} />;
       
-      case currentRoute === '/data-input':
+      case currentRoute === '/Factors':
         return (
           <FactorForm
             user={user}
