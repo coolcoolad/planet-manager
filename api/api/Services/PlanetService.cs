@@ -1,4 +1,5 @@
 using database.Entities;
+using database.Enums;
 using database.UnitOfWork;
 
 namespace api.Services;
@@ -17,9 +18,9 @@ public class PlanetService
     public async Task<List<Planet>> GetPlanetsAsync(int userId)
     {
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
-        if (user == null) return new List<Planet>();
+        if (user == null) return [];
 
-        if (user.Role == database.Enums.UserRole.SUPER_ADMIN)
+        if (user.Role == UserRole.SUPER_ADMIN)
         {
             return await _unitOfWork.Planets.GetAllAsync();
         }
@@ -29,7 +30,7 @@ public class PlanetService
 
     public async Task<Planet?> GetPlanetAsync(int planetId, int userId)
     {
-        if (!await _permissionService.HasAccessToPlanetAsync(userId, planetId))
+        if (!await _permissionService.CheckPermissionAsync(userId, "Planet", "Read", planetId))
             return null;
 
         return await _unitOfWork.Planets.GetByIdAsync(planetId);

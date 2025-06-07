@@ -1,5 +1,6 @@
 using database.Entities;
 using database.UnitOfWork;
+using System.Numerics;
 
 namespace api.Services;
 
@@ -16,15 +17,15 @@ public class FactorService
 
     public async Task<List<PlanetFactor>> GetFactorsAsync(int planetId, int userId)
     {
-        if (!await _permissionService.HasAccessToPlanetAsync(userId, planetId))
-            return new List<PlanetFactor>();
+        if (!await _permissionService.CheckPermissionAsync(userId, "Planet", "Read", planetId))
+            throw new UnauthorizedAccessException("Insufficient permissions to get factor");
 
         return await _unitOfWork.PlanetFactors.GetByPlanetIdAsync(planetId);
     }
 
     public async Task<PlanetFactor> AddFactorAsync(PlanetFactor factor, int userId)
     {
-        if (!await _permissionService.HasAccessToPlanetAsync(userId, factor.PlanetId))
+        if (!await _permissionService.CheckPermissionAsync(userId, "Planet", "Read", factor.PlanetId))
             throw new UnauthorizedAccessException("Insufficient permissions to add factor");
 
         factor.RecordedAt = DateTime.UtcNow;
@@ -40,7 +41,7 @@ public class FactorService
         if (existingFactor == null)
             throw new ArgumentException("Factor not found");
 
-        if (!await _permissionService.HasAccessToPlanetAsync(userId, existingFactor.PlanetId))
+        if (!await _permissionService.CheckPermissionAsync(userId, "Planet", "Read", factor.PlanetId))
             throw new UnauthorizedAccessException("Insufficient permissions to update factor");
 
         factor.PlanetId = existingFactor.PlanetId; // Ensure planet ID doesn't change
@@ -56,41 +57,9 @@ public class FactorService
         var factor = await _unitOfWork.PlanetFactors.GetByIdAsync(factorId);
         if (factor == null) return false;
 
-        if (!await _permissionService.HasAccessToPlanetAsync(userId, factor.PlanetId))
+        if (!await _permissionService.CheckPermissionAsync(userId, "Planet", "Read", factor.PlanetId))
             throw new UnauthorizedAccessException("Insufficient permissions to delete factor");
 
         return await _unitOfWork.PlanetFactors.DeleteAsync(factorId);
-    }
-
-    public async Task<List<PlanetFactor>> AddFactorsBatchAsync(List<PlanetFactor> factors, int userId)
-    {
-        if (factors.Count == 0) return new List<PlanetFactor>();
-
-        var planetId = factors.First().PlanetId;
-        if (!await _permissionService.HasAccessToPlanetAsync(userId, planetId))
-            throw new UnauthorizedAccessException("Insufficient permissions to add factors");
-
-        await _unitOfWork.BeginTransactionAsync();
-        try
-        {
-            var user = await _unitOfWork.Users.GetByIdAsync(userId);
-            var createdFactors = new List<PlanetFactor>();
-
-            foreach (var factor in factors)
-            {
-                factor.RecordedAt = DateTime.UtcNow;
-                factor.RecordedBy = user?.Username ?? "Unknown";
-                var created = await _unitOfWork.PlanetFactors.CreateAsync(factor);
-                createdFactors.Add(created);
-            }
-
-            await _unitOfWork.CommitAsync();
-            return createdFactors;
-        }
-        catch
-        {
-            await _unitOfWork.RollbackAsync();
-            throw;
-        }
     }
 }

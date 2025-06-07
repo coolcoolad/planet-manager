@@ -100,33 +100,6 @@ public class FactorController : ControllerBase
         }
     }
 
-    [HttpPost("batch")]
-    public async Task<ActionResult<List<PlanetFactor>>> AddFactorsBatch(int planetId, [FromBody] List<AddFactorRequest> requests)
-    {
-        try
-        {
-            var userId = GetCurrentUserId();
-            var factors = requests.Select(r => new PlanetFactor
-            {
-                PlanetId = planetId,
-                FactorName = r.FactorName,
-                Category = r.Category,
-                Value = r.Value,
-                Unit = r.Unit,
-                DataType = r.DataType,
-                Weight = r.Weight,
-                Description = r.Description
-            }).ToList();
-
-            var createdFactors = await _factorService.AddFactorsBatchAsync(factors, userId);
-            return CreatedAtAction(nameof(GetFactors), new { planetId }, createdFactors);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Forbid();
-        }
-    }
-
     private int GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

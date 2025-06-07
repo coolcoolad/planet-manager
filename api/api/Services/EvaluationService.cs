@@ -17,9 +17,6 @@ public class EvaluationService
 
     public async Task<Evaluation> CreateEvaluationAsync(Evaluation evaluation, int userId)
     {
-        if (!await _permissionService.CheckPermissionAsync(userId, "Evaluation", "Create"))
-            throw new UnauthorizedAccessException("Insufficient permissions to create evaluation");
-
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
         evaluation.CreatedAt = DateTime.UtcNow;
         evaluation.CreatedBy = user?.Username ?? "Unknown";
@@ -44,16 +41,15 @@ public class EvaluationService
 
     public async Task<Evaluation?> GetEvaluationResultAsync(int evaluationId, int userId)
     {
-        if (!await _permissionService.CheckPermissionAsync(userId, "Evaluation", "Read"))
-            return null;
-
         return await _unitOfWork.Evaluations.GetByIdAsync(evaluationId);
     }
 
     public async Task<List<Evaluation>> GetEvaluationHistoryAsync(int userId)
     {
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
-        if (user?.Role == UserRole.SUPER_ADMIN)
+        if (user == null) return [];
+
+        if (user.Role == UserRole.SUPER_ADMIN)
         {
             return await _unitOfWork.Evaluations.GetAllAsync();
         }
@@ -63,17 +59,9 @@ public class EvaluationService
 
     public async Task<bool> DeleteEvaluationAsync(int evaluationId, int userId)
     {
-        if (!await _permissionService.CheckPermissionAsync(userId, "Evaluation", "Delete"))
-            throw new UnauthorizedAccessException("Insufficient permissions to delete evaluation");
-
         var evaluation = await _unitOfWork.Evaluations.GetByIdAsync(evaluationId);
         if (evaluation == null)
             return false;
-
-        // Check if user owns the evaluation or is super admin
-        var user = await _unitOfWork.Users.GetByIdAsync(userId);
-        if (user?.Role != UserRole.SUPER_ADMIN && evaluation.CreatedByUserId != userId)
-            throw new UnauthorizedAccessException("You can only delete your own evaluations");
 
         await _unitOfWork.BeginTransactionAsync();
         try

@@ -30,21 +30,6 @@ public class PermissionService
             (p.PlanetId == null || p.PlanetId == resourceId));
     }
 
-    public async Task<bool> HasAccessToPlanetAsync(int userId, int planetId)
-    {
-        var user = await _unitOfWork.Users.GetByIdAsync(userId);
-        if (user == null || !user.IsActive) return false;
-
-        // Super admin has access to all planets
-        if (user.Role == UserRole.SUPER_ADMIN) return true;
-
-        // Planet admin has access to their assigned planet
-        if (user.Role == UserRole.PLANET_ADMIN && user.AssignedPlanetId == planetId) return true;
-
-        // Check specific planet permissions
-        return await CheckPermissionAsync(userId, "Planet", "Read", planetId);
-    }
-
     public async Task<List<Permission>> GetUserPermissionsAsync(int userId)
     {
         return await _unitOfWork.Permissions.GetByUserIdAsync(userId);
