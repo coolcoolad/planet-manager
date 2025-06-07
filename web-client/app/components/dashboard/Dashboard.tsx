@@ -24,7 +24,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
         ]);
         
         setPlanets(planetsData);
-        setEvaluations(evaluationsData);
+        // Sort evaluations by time in descending order (most recent first)
+        const sortedEvaluations = evaluationsData.sort((a, b) => 
+          new Date(b.createdAt || 0).getTime() - 
+          new Date(a.createdAt || 0).getTime()
+        );
+        setEvaluations(sortedEvaluations);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
