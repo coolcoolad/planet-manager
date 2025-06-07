@@ -71,57 +71,81 @@ export const App: React.FC = () => {
 
   const renderContent = () => {
     console.log('Rendering content for route:', currentRoute);
-    switch (true) {
-      case currentRoute === '/dashboard':
-        return <Dashboard user={user} onNavigate={handleNavigate} />;
-      
-      case currentRoute.startsWith('/planets/'):
-        if (currentRoute.startsWith('/planets/new')) {
-          return <PlanetNewForm user={user} onNavigate={handleNavigate} />;
-        }
-        const planetId = currentRoute.split('/')[2];
-        if (currentRoute.endsWith('/edit')) {
-          return <PlanetEditForm user={user} planetId={planetId} onNavigate={handleNavigate} />;
-        }
-        return <PlanetDetail user={user} planetId={planetId} onNavigate={handleNavigate} />;
+    
+    // Route pattern matching
+    const matchRoute = (pattern: string, route: string) => {
+      const regexPattern = pattern.replace(/:\w+/g, '([^/]+)');
+      const regex = new RegExp(`^${regexPattern}$`);
+      const match = route.match(regex);
+      return match ? match.slice(1) : null;
+    };
 
-      case currentRoute === '/planets':
-        return <PlanetsOverview user={user} onNavigate={handleNavigate} />;
-      
-      case currentRoute === '/Factors':
-        return (
-          <FactorForm
-            user={user}
-            onSuccess={() => {
-              alert('Factor added successfully!');
-              handleNavigate('/planets');
-            }}
-            onCancel={() => handleNavigate('/planets')}
-          />
-        );
-      
-      case currentRoute === '/evaluation':
-        return (
-          <EvaluationForm
-            onSuccess={(evaluationId) => {
-              alert(`Evaluation created successfully! ID: ${evaluationId}`);
-              handleNavigate('/dashboard');
-            }}
-            onCancel={() => handleNavigate('/dashboard')}
-          />
-        );
-      
-      case currentRoute.startsWith('/evaluation/') && currentRoute !== '/evaluation':
-        const evaluationId = parseInt(currentRoute.split('/')[2]);
-        return (
-          <EvaluationDetail
-            evaluationId={evaluationId}
-            onBack={() => setCurrentRoute('/evaluation')}
-          />
-        );
-      default:
-        return <Dashboard user={user} onNavigate={handleNavigate} />;
+    // Dashboard
+    if (currentRoute === '/dashboard') {
+      return <Dashboard user={user} onNavigate={handleNavigate} />;
     }
+
+    // Planets routes
+    if (currentRoute === '/planets') {
+      return <PlanetsOverview user={user} onNavigate={handleNavigate} />;
+    }
+
+    if (currentRoute === '/planets/new') {
+      return <PlanetNewForm user={user} onNavigate={handleNavigate} />;
+    }
+
+    const planetEditMatch = matchRoute('/planets/:id/edit', currentRoute);
+    if (planetEditMatch) {
+      const [planetId] = planetEditMatch;
+      return <PlanetEditForm user={user} planetId={planetId} onNavigate={handleNavigate} />;
+    }
+
+    const planetDetailMatch = matchRoute('/planets/:id', currentRoute);
+    if (planetDetailMatch) {
+      const [planetId] = planetDetailMatch;
+      return <PlanetDetail user={user} planetId={planetId} onNavigate={handleNavigate} />;
+    }
+
+    // Factors route
+    if (currentRoute === '/factors') {
+      return (
+        <FactorForm
+          user={user}
+          onSuccess={() => {
+            alert('Factor added successfully!');
+            handleNavigate('/planets');
+          }}
+          onCancel={() => handleNavigate('/planets')}
+        />
+      );
+    }
+
+    // Evaluation routes
+    if (currentRoute === '/evaluation') {
+      return (
+        <EvaluationForm
+          onSuccess={(evaluationId) => {
+            alert(`Evaluation created successfully! ID: ${evaluationId}`);
+            handleNavigate('/dashboard');
+          }}
+          onCancel={() => handleNavigate('/dashboard')}
+        />
+      );
+    }
+
+    const evaluationDetailMatch = matchRoute('/evaluation/:id', currentRoute);
+    if (evaluationDetailMatch) {
+      const [evaluationId] = evaluationDetailMatch;
+      return (
+        <EvaluationDetail
+          evaluationId={parseInt(evaluationId)}
+          onBack={() => setCurrentRoute('/evaluation')}
+        />
+      );
+    }
+
+    // Default fallback
+    return <Dashboard user={user} onNavigate={handleNavigate} />;
   };
 
   if (loading) {
