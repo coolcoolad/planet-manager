@@ -61,6 +61,25 @@ public class EvaluationController : ControllerBase
         return Ok(evaluations);
     }
 
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteEvaluation(int id)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            var success = await _evaluationService.DeleteEvaluationAsync(id, userId);
+            
+            if (!success)
+                return NotFound();
+            
+            return NoContent();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+    }
+
     private int GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

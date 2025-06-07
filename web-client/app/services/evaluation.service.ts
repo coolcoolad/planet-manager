@@ -13,6 +13,10 @@ export class EvaluationService {
   async getEvaluationById(id: number): Promise<Evaluation> {
     return apiClient.get<Evaluation>(`/Evaluation/${id}`);
   }
+
+  async deleteEvaluation(id: number): Promise<void> {
+    return apiClient.delete(`/Evaluation/${id}`);
+  }
 }
 
 export const evaluationService = new EvaluationService();

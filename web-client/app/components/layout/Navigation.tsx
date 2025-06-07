@@ -12,7 +12,7 @@ export const Navigation: React.FC<NavigationProps> = ({ user, activeRoute, onNav
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
     { path: '/planets', label: 'Planets', icon: '🪐' },
     // { path: '/Factors', label: 'Factors', icon: '📝' },
-    { path: '/evaluation', label: 'Evaluation', icon: '⚖️' },
+    { path: '/evaluations', label: 'Evaluations', icon: '⚖️' },
     { path: '/settings', label: 'Settings', icon: '⚙️' },
   ];
 

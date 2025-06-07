@@ -61,6 +61,34 @@ public class EvaluationService
         return await _unitOfWork.Evaluations.GetByUserIdAsync(userId);
     }
 
+    public async Task<bool> DeleteEvaluationAsync(int evaluationId, int userId)
+    {
+        if (!await _permissionService.CheckPermissionAsync(userId, "Evaluation", "Delete"))
+            throw new UnauthorizedAccessException("Insufficient permissions to delete evaluation");
+
+        var evaluation = await _unitOfWork.Evaluations.GetByIdAsync(evaluationId);
+        if (evaluation == null)
+            return false;
+
+        // Check if user owns the evaluation or is super admin
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+        if (user?.Role != UserRole.SUPER_ADMIN && evaluation.CreatedByUserId != userId)
+            throw new UnauthorizedAccessException("You can only delete your own evaluations");
+
+        await _unitOfWork.BeginTransactionAsync();
+        try
+        {
+            await _unitOfWork.Evaluations.DeleteAsync(evaluationId);
+            await _unitOfWork.CommitAsync();
+            return true;
+        }
+        catch
+        {
+            await _unitOfWork.RollbackAsync();
+            throw;
+        }
+    }
+
     private async Task ExecuteEvaluationAsync(int evaluationId)
     {
         var evaluation = await _unitOfWork.Evaluations.GetByIdAsync(evaluationId);

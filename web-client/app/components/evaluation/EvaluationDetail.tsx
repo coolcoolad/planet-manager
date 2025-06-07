@@ -105,12 +105,12 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
       {/* Header */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center justify-between mb-4">
-          <button
+          {/* <button
             onClick={onBack}
             className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
           >
             ← Back to Evaluations
-          </button>
+          </button> */}
           <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(evaluation.status)}`}>
             {getStatusText(evaluation.status)}
           </span>

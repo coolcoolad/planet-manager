@@ -85,12 +85,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
       {/* Recent Evaluations Section */}
       <RecentEvaluations
         evaluations={evaluations.slice(0, 5)}
-        onViewAll={() => onNavigate('/evaluation')}
+        onViewAll={() => onNavigate('/evaluations')}
         onViewDetail={handleViewEvaluationDetail}
       />
 
       {/* Quick Actions Section */}
-      <QuickActions user={user} onNavigate={onNavigate} />
+      {/* <QuickActions user={user} onNavigate={onNavigate} /> */}
     </div>
   );
 };
