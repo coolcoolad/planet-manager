@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { evaluationService } from '../../services';
-import { EvaluationStatus } from '../../types/api';
+import { EvaluationStatus, Evaluation } from '../../types/api';
 
 interface EvaluationDetailProps {
   evaluationId: number;
@@ -11,7 +11,7 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
   evaluationId, 
   onBack 
 }) => {
-  const [evaluation, setEvaluation] = useState<any>(null);
+  const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
