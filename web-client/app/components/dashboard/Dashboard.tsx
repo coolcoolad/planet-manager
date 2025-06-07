@@ -22,8 +22,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           planetService.getAllPlanets(),
           evaluationService.getAllEvaluations()
         ]);
-        setPlanets(planetsData);
-        setEvaluations(evaluationsData);
+        
+        // Sort by time descending (most recent first)
+        const sortedPlanets = planetsData.sort((a, b) => 
+          new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime()
+        );
+        const sortedEvaluations = evaluationsData.sort((a, b) => 
+          new Date(b.createdAt || b.createdAt).getTime() - new Date(a.createdAt || a.createdAt).getTime()
+        );
+        
+        setPlanets(sortedPlanets);
+        setEvaluations(sortedEvaluations);
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
       } finally {
@@ -54,15 +63,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
         </p>
       </div>
 
-      {/* Planet Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {planets.map(planet => (
-          <PlanetStatusCard
-            key={planet.id}
-            planet={planet}
-            onViewDetails={() => onNavigate(`/planets/${planet.id}`)}
-          />
-        ))}
+      {/* Recent Planets */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium text-gray-900">Recent Planets</h3>
+          <button
+            onClick={() => onNavigate('/planets')}
+            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+          >
+            View All
+          </button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {planets.slice(0, 3).map(planet => (
+            <PlanetStatusCard
+              key={planet.id}
+              planet={planet}
+              onViewDetails={() => onNavigate(`/planets/${planet.id}`)}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Recent Evaluations */}
