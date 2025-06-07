@@ -3,6 +3,7 @@ import { Layout } from './components/layout/Layout';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { PlanetsOverview, PlanetDetail, PlanetEditForm, PlanetNewForm } from './components/planets';
 import { EvaluationForm } from './components/evaluation/EvaluationForm';
+import { EvaluationDetail } from './components/evaluation/EvaluationDetail';
 import { FactorForm } from './components/factors/FactorForm';
 import { LoginForm } from './components/auth/LoginForm';
 import { User } from './types/api';
@@ -110,6 +111,14 @@ export const App: React.FC = () => {
           />
         );
       
+      case currentRoute.startsWith('/evaluation/') && currentRoute !== '/evaluation':
+        const evaluationId = parseInt(currentRoute.split('/')[2]);
+        return (
+          <EvaluationDetail
+            evaluationId={evaluationId}
+            onBack={() => setCurrentRoute('/evaluation')}
+          />
+        );
       default:
         return <Dashboard user={user} onNavigate={handleNavigate} />;
     }
@@ -147,3 +156,5 @@ export const App: React.FC = () => {
     </Layout>
   );
 };
+
+export default App;

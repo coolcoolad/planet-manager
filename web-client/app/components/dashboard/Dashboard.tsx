@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Planet, Evaluation, User } from '../../types/api';
+import { User } from '../../types/api';
 import { planetService, evaluationService } from '../../services';
 import { PlanetStatusCard } from './PlanetStatusCard';
 import { RecentEvaluations } from './RecentEvaluations';
@@ -11,8 +11,8 @@ interface DashboardProps {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
-  const [planets, setPlanets] = useState<Planet[]>([]);
-  const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
+  const [planets, setPlanets] = useState<any[]>([]);
+  const [evaluations, setEvaluations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,18 +23,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           evaluationService.getAllEvaluations()
         ]);
         
-        // Sort by time descending (most recent first)
-        const sortedPlanets = planetsData.sort((a, b) => 
-          new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime()
-        );
-        const sortedEvaluations = evaluationsData.sort((a, b) => 
-          new Date(b.createdAt || b.createdAt).getTime() - new Date(a.createdAt || a.createdAt).getTime()
-        );
-        
-        setPlanets(sortedPlanets);
-        setEvaluations(sortedEvaluations);
+        setPlanets(planetsData);
+        setEvaluations(evaluationsData);
       } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
+        console.error('Error fetching dashboard data:', error);
       } finally {
         setLoading(false);
       }
@@ -43,17 +35,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
     fetchData();
   }, []);
 
+  const handleViewEvaluationDetail = (evaluationId: number) => {
+    onNavigate(`/evaluation/${evaluationId}`);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Welcome Message */}
+      {/* Welcome Section */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
           Welcome back, {user?.username}!
@@ -63,7 +59,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
         </p>
       </div>
 
-      {/* Recent Planets */}
+      {/* Recent Planets Section */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium text-gray-900">Recent Planets</h3>
@@ -74,8 +70,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
             View All
           </button>
         </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {planets.slice(0, 3).map(planet => (
+          {planets.slice(0, 3).map((planet) => (
             <PlanetStatusCard
               key={planet.id}
               planet={planet}
@@ -85,13 +82,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
         </div>
       </div>
 
-      {/* Recent Evaluations */}
+      {/* Recent Evaluations Section */}
       <RecentEvaluations
         evaluations={evaluations.slice(0, 5)}
         onViewAll={() => onNavigate('/evaluation')}
+        onViewDetail={handleViewEvaluationDetail}
       />
 
-      {/* Quick Actions */}
+      {/* Quick Actions Section */}
       <QuickActions user={user} onNavigate={onNavigate} />
     </div>
   );

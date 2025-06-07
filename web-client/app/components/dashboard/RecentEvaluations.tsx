@@ -4,15 +4,24 @@ import { Evaluation, EvaluationStatus } from '../../types/api';
 interface RecentEvaluationsProps {
   evaluations: Evaluation[];
   onViewAll: () => void;
+  onViewDetail?: (evaluationId: number) => void;
 }
 
-export const RecentEvaluations: React.FC<RecentEvaluationsProps> = ({ evaluations, onViewAll }) => {
+export const RecentEvaluations: React.FC<RecentEvaluationsProps> = ({ 
+  evaluations, 
+  onViewAll,
+  onViewDetail 
+}) => {
   const getStatusColor = (status: EvaluationStatus) => {
     switch (status) {
-      case EvaluationStatus.Completed: return 'bg-green-100 text-green-800';
-      case EvaluationStatus.Running: return 'bg-blue-100 text-blue-800';
-      case EvaluationStatus.Pending: return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-red-100 text-red-800';
+      case EvaluationStatus.Completed:
+        return 'bg-green-100 text-green-800';
+      case EvaluationStatus.Running:
+        return 'bg-blue-100 text-blue-800';
+      case EvaluationStatus.Pending:
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-red-100 text-red-800';
     }
   };
 
@@ -21,7 +30,7 @@ export const RecentEvaluations: React.FC<RecentEvaluationsProps> = ({ evaluation
       [EvaluationStatus.Pending]: 'Pending',
       [EvaluationStatus.Running]: 'Running',
       [EvaluationStatus.Completed]: 'Completed',
-      [EvaluationStatus.Failed]: 'Failed'
+      [EvaluationStatus.Failed]: 'Failed',
     };
     return statusMap[status] || 'Unknown';
   };
@@ -49,7 +58,6 @@ export const RecentEvaluations: React.FC<RecentEvaluationsProps> = ({ evaluation
           View All
         </button>
       </div>
-      
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50">
@@ -68,6 +76,9 @@ export const RecentEvaluations: React.FC<RecentEvaluationsProps> = ({ evaluation
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Created By
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
               </th>
             </tr>
           </thead>
@@ -92,6 +103,15 @@ export const RecentEvaluations: React.FC<RecentEvaluationsProps> = ({ evaluation
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {evaluation.createdBy || 'System'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <button
+                    onClick={() => onViewDetail?.(evaluation.id)}
+                    className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-md transition-colors"
+                    disabled={evaluation.status === EvaluationStatus.Pending || evaluation.status === EvaluationStatus.Running}
+                  >
+                    {evaluation.status === EvaluationStatus.Completed ? 'View Detail' : 'Processing...'}
+                  </button>
                 </td>
               </tr>
             ))}

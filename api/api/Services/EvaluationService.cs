@@ -100,6 +100,7 @@ public class EvaluationService
                 rankedResults[i].Rank = i + 1;
             }
 
+            evaluation.Results = rankedResults;
             evaluation.Status = EvaluationStatus.COMPLETED;
             await _unitOfWork.Evaluations.UpdateAsync(evaluation);
         }
