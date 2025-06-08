@@ -22,7 +22,7 @@ public class PermissionService
         if (user.Role == UserRole.SUPER_ADMIN) return true;
 
         // Check specific permissions
-        var permissions = await _unitOfWork.Permissions.GetByUserIdAsync(userId);
+        var permissions = await _unitOfWork.Permissions.Get(x => x.Role == user.Role);
         
         return permissions.Any(p => 
             p.Resource == resource && 

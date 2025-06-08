@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using database.Context;
 using database.Entities;
+using System.Linq.Expressions;
 
 namespace database.Repositories;
 
@@ -45,6 +46,11 @@ public class PermissionRepository : IPermissionRepository
     public async Task<List<Permission>> GetAllAsync()
     {
         return await _context.Permissions.ToListAsync();
+    }
+
+    public async Task<List<Permission>> Get(Expression<Func<Permission, bool>> exp)
+    {
+        return await _context.Permissions.Where(exp).ToListAsync();
     }
 
     public async Task<List<Permission>> GetByUserIdAsync(int userId)

@@ -25,7 +25,10 @@ public class PlanetService
             return await _unitOfWork.Planets.GetAllAsync();
         }
 
-        return await _unitOfWork.Planets.GetByUserIdAsync(userId);
+        var planetIds = (await _unitOfWork.Permissions.Get(x => x.Role == user.Role)).Select(x => x.PlanetId).ToList();
+        var planets = await _unitOfWork.Planets.Get(x => planetIds.Contains(x.Id));
+
+        return planets;
     }
 
     public async Task<Planet?> GetPlanetAsync(int planetId, int userId)

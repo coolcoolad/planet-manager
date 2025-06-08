@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using database.Context;
 using database.Entities;
+using System.Linq.Expressions;
 
 namespace database.Repositories;
 
@@ -45,6 +46,11 @@ public class PlanetRepository : IPlanetRepository
     public async Task<List<Planet>> GetAllAsync()
     {
         return await _context.Planets.ToListAsync();
+    }
+
+    public async Task<List<Planet>> Get(Expression<Func<Planet, bool>> exp)
+    {
+        return await _context.Planets.Where(exp).ToListAsync();
     }
 
     public async Task<List<Planet>> GetByUserIdAsync(int userId)
