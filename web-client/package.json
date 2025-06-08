@@ -5,10 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build --no-lint",
-    "build:static": "next build --no-lint && next export",
     "start": "next start",
-    "lint": "next lint",
-    "deploy:static": "npm run build:static && echo 'Static files ready in ./out directory'"
+    "lint": "next lint"
   },
   "dependencies": {
     "next": "15.3.3",

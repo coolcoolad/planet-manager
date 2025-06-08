@@ -27,7 +27,7 @@ jobs:
         working-directory: ./web-client
         run: |
           npm install
-          npm run build:static --if-present
+          npm run build --if-present
           npm run test --if-present
       
       - name: Upload artifact for deployment job
