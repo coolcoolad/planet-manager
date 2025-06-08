@@ -45,6 +45,13 @@ export enum ChartType {
   Radar = 4
 }
 
+export enum UserRole {
+  SuperAdmin = 0,
+  PlanetAdmin = 1,
+  ViewerType1 = 2,
+  ViewerType2 = 3
+}
+
 // Request Types
 export interface LoginRequest {
   username?: string;
@@ -95,6 +102,27 @@ export interface UpdateFactorRequest {
   value?: any;
   weight: number;
   description?: string;
+}
+
+export interface CreatePermissionRequest {
+  role: UserRole;
+  resource: string;
+  action: string;
+  resourceId?: number;
+}
+
+export interface UpdatePermissionRequest {
+  role: UserRole;
+  resource: string;
+  action: string;
+  resourceId?: number;
+}
+
+export interface CheckPermissionRequest {
+  userId?: number;
+  resource: string;
+  action: string;
+  resourceId?: number;
 }
 
 // Response Types
@@ -214,4 +242,8 @@ export interface Permission {
   action: string;
   planetId?: number;
   planet?: Planet;
+}
+
+export interface CheckPermissionResponse {
+  hasPermission: boolean;
 }
