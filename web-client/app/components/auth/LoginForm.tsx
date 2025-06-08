@@ -114,7 +114,15 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onError }) => {
               disabled={loading}
               className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white py-1 px-3 rounded-md text-sm transition-colors"
             >
-              Demo: admin
+              Demo: super_admin
+            </button>
+            
+            <button
+              onClick={() => handleDemoLogin('kepler438b_admin', 'password123')}
+              disabled={loading}
+              className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white py-1 px-3 rounded-md text-sm transition-colors"
+            >
+              Demo: kepler438b_admin
             </button>
             
             <button
@@ -123,6 +131,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onError }) => {
               className="w-full bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white py-1 px-3 rounded-md text-sm transition-colors"
             >
               Demo: viewer_type1
+            </button>
+
+            <button
+              onClick={() => handleDemoLogin('viewer_type2', 'password123')}
+              disabled={loading}
+              className="w-full bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white py-1 px-3 rounded-md text-sm transition-colors"
+            >
+              Demo: viewer_type2
             </button>
           </div>
         </div>
