@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Planet, PlanetStatus, User } from '../../types/api';
 import { ConfirmDialog } from '../common/ConfirmDialog';
+import { permissionService } from '../../services/permission.service';
 
 interface PlanetCardProps {
   planet: Planet;
@@ -22,6 +23,9 @@ export const PlanetCard: React.FC<PlanetCardProps> = ({
   onDelete
 }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [canEdit, setCanEdit] = useState(false);
+  const [canDelete, setCanDelete] = useState(false);
+  const [permissionsLoading, setPermissionsLoading] = useState(true);
 
   const getStatusColor = (status: PlanetStatus) => {
     switch (status) {
@@ -64,6 +68,45 @@ export const PlanetCard: React.FC<PlanetCardProps> = ({
     setShowDeleteConfirm(false);
   };
 
+  useEffect(() => {
+    const checkPermissions = async () => {
+      if (!user) {
+        setCanEdit(false);
+        setCanDelete(false);
+        setPermissionsLoading(false);
+        return;
+      }
+
+      try {
+        const [editPermission, deletePermission] = await Promise.all([
+          permissionService.checkPermission({
+            userId: user.id,
+            resource: 'Planet',
+            action: 'Update',
+            resourceId: planet.id
+          }),
+          permissionService.checkPermission({
+            userId: user.id,
+            resource: 'Planet',
+            action: 'Delete',
+            resourceId: planet.id
+          })
+        ]);
+
+        setCanEdit(editPermission.hasPermission);
+        setCanDelete(deletePermission.hasPermission);
+      } catch (error) {
+        console.error('Error checking permissions:', error);
+        setCanEdit(false);
+        setCanDelete(false);
+      } finally {
+        setPermissionsLoading(false);
+      }
+    };
+
+    checkPermissions();
+  }, [user, planet.id]);
+
   if (viewMode === 'list') {
     return (
       <>
@@ -94,7 +137,12 @@ export const PlanetCard: React.FC<PlanetCardProps> = ({
             {user && (
               <button
                 onClick={onEdit}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                disabled={permissionsLoading || !canEdit}
+                className={`px-3 py-1 rounded text-sm transition-colors ${
+                  permissionsLoading || !canEdit
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-gray-600 hover:bg-gray-700 text-white'
+                }`}
               >
                 Edit
               </button>
@@ -102,7 +150,12 @@ export const PlanetCard: React.FC<PlanetCardProps> = ({
             {user && (
               <button
                 onClick={handleDeleteClick}
-                className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                disabled={permissionsLoading || !canDelete}
+                className={`px-3 py-1 rounded text-sm transition-colors ${
+                  permissionsLoading || !canDelete
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-red-600 hover:bg-red-700 text-white'
+                }`}
               >
                 Delete
               </button>
@@ -167,7 +220,12 @@ export const PlanetCard: React.FC<PlanetCardProps> = ({
           {user && (
             <button
               onClick={onEdit}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded text-sm transition-colors"
+              disabled={permissionsLoading || !canEdit}
+              className={`px-3 py-2 rounded text-sm transition-colors ${
+                permissionsLoading || !canEdit
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-gray-600 hover:bg-gray-700 text-white'
+              }`}
             >
               Edit
             </button>
@@ -175,7 +233,12 @@ export const PlanetCard: React.FC<PlanetCardProps> = ({
           {user && (
             <button
               onClick={handleDeleteClick}
-              className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm transition-colors"
+              disabled={permissionsLoading || !canDelete}
+              className={`px-3 py-2 rounded text-sm transition-colors ${
+                permissionsLoading || !canDelete
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-red-600 hover:bg-red-700 text-white'
+              }`}
             >
               Delete
             </button>

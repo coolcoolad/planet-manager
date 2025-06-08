@@ -145,6 +145,7 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   isActive: boolean;
+  role?: UserRole;
   assignedPlanet?: Planet;
   createdEvaluations?: Evaluation[];
 }

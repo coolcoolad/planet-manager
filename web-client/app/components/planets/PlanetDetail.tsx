@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Planet, PlanetFactor, EvaluationResult, User, PlanetStatus, FactorCategory } from '../../types/api';
 import { planetService, factorService } from '../../services';
+import { permissionService } from '../../services/permission.service';
 
 interface PlanetDetailProps {
   user?: User;
@@ -16,6 +17,9 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
   const [activeTab, setActiveTab] = useState<'overview' | 'factors' | 'evaluations'>('overview');
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [canUpdate, setCanUpdate] = useState(false);
+  const [canDelete, setCanDelete] = useState(false);
+  const [permissionsLoading, setPermissionsLoading] = useState(false);
 
   useEffect(() => {
     const fetchPlanetData = async () => {
@@ -44,6 +48,44 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
 
     fetchPlanetData();
   }, [planetId]);
+
+  useEffect(() => {
+    const checkPermissions = async () => {
+      if (!user || !planet) return;
+      
+      try {
+        setPermissionsLoading(true);
+        const planetIdNum = parseInt(planetId);
+        
+        const [updatePermission, deletePermission] = await Promise.all([
+          permissionService.checkPermission({
+            userId: user.id,
+            resource: 'Planet',
+            action: 'Update',
+            resourceId: planetIdNum
+          }),
+          permissionService.checkPermission({
+            userId: user.id,
+            resource: 'Planet',
+            action: 'Delete',
+            resourceId: planetIdNum
+          })
+        ]);
+
+        setCanUpdate(updatePermission.hasPermission);
+        setCanDelete(deletePermission.hasPermission);
+      } catch (err) {
+        console.error('Error checking permissions:', err);
+        // Default to false on error
+        setCanUpdate(false);
+        setCanDelete(false);
+      } finally {
+        setPermissionsLoading(false);
+      }
+    };
+
+    checkPermissions();
+  }, [user, planet, planetId]);
 
   const getStatusColor = (status: PlanetStatus) => {
     switch (status) {
@@ -89,7 +131,7 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
   };
 
   const handleDelete = async () => {
-    if (!planet || deleting) return;
+    if (!planet || deleting || !canDelete) return;
     
     try {
       setDeleting(true);
@@ -157,16 +199,27 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
             <div className="flex space-x-2">
               <button
                 onClick={() => onNavigate(`/planets/${planet.id}/edit`)}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md transition-colors"
+                className={`px-4 py-2 rounded-md transition-colors ${
+                  canUpdate && !permissionsLoading
+                    ? 'bg-gray-600 hover:bg-gray-700 text-white'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+                disabled={!canUpdate || permissionsLoading}
+                title={!canUpdate ? 'You do not have permission to edit this planet' : ''}
               >
-                Edit
+                {permissionsLoading ? 'Loading...' : 'Edit'}
               </button>
               <button
                 onClick={() => setDeleteConfirmOpen(true)}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors"
-                disabled={deleting}
+                className={`px-4 py-2 rounded-md transition-colors ${
+                  canDelete && !permissionsLoading && !deleting
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+                disabled={!canDelete || deleting || permissionsLoading}
+                title={!canDelete ? 'You do not have permission to delete this planet' : ''}
               >
-                {deleting ? 'Deleting...' : 'Delete'}
+                {deleting ? 'Deleting...' : permissionsLoading ? 'Loading...' : 'Delete'}
               </button>
               {/* <button
                 onClick={() => onNavigate(`/Factors?planetId=${planet.id}`)}
@@ -384,8 +437,12 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
               </button>
               <button
                 onClick={handleDelete}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors"
-                disabled={deleting}
+                className={`px-4 py-2 rounded-md transition-colors ${
+                  canDelete && !deleting
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+                disabled={!canDelete || deleting}
               >
                 {deleting ? 'Deleting...' : 'Delete'}
               </button>
