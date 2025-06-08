@@ -5,6 +5,13 @@ const nextConfig: NextConfig = {
   env: {
     API_BASE_URL: process.env.API_BASE_URL,
   },
+  // 添加静态导出配置
+  output: 'export',
+  trailingSlash: true,
+  skipTrailingSlashRedirect: true,
+  images: {
+    unoptimized: true
+  }
 };
 
 export default nextConfig;

@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build --no-lint",
+    "build:static": "next build --no-lint && next export",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "deploy:static": "npm run build:static && echo 'Static files ready in ./out directory'"
   },
   "dependencies": {
     "next": "15.3.3",
