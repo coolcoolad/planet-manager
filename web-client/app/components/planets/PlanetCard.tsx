@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Planet, PlanetStatus, User } from '../../types/api';
 import { ConfirmDialog } from '../common/ConfirmDialog';
-import { permissionService } from '../../services/permission.service';
 
 interface PlanetCardProps {
   planet: Planet;
   viewMode: 'grid' | 'list';
   user?: User;
+  canEdit: boolean;
+  canDelete: boolean;
+  permissionsLoading: boolean;
   onViewDetails: () => void;
   onEdit: () => void;
   onEvaluate: () => void;
@@ -17,15 +19,15 @@ export const PlanetCard: React.FC<PlanetCardProps> = ({
   planet,
   viewMode,
   user,
+  canEdit,
+  canDelete,
+  permissionsLoading,
   onViewDetails,
   onEdit,
   onEvaluate,
   onDelete
 }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [canEdit, setCanEdit] = useState(false);
-  const [canDelete, setCanDelete] = useState(false);
-  const [permissionsLoading, setPermissionsLoading] = useState(true);
 
   const getStatusColor = (status: PlanetStatus) => {
     switch (status) {
@@ -67,45 +69,6 @@ export const PlanetCard: React.FC<PlanetCardProps> = ({
     onDelete();
     setShowDeleteConfirm(false);
   };
-
-  useEffect(() => {
-    const checkPermissions = async () => {
-      if (!user) {
-        setCanEdit(false);
-        setCanDelete(false);
-        setPermissionsLoading(false);
-        return;
-      }
-
-      try {
-        const [editPermission, deletePermission] = await Promise.all([
-          permissionService.checkPermission({
-            userId: user.id,
-            resource: 'Planet',
-            action: 'Update',
-            resourceId: planet.id
-          }),
-          permissionService.checkPermission({
-            userId: user.id,
-            resource: 'Planet',
-            action: 'Delete',
-            resourceId: planet.id
-          })
-        ]);
-
-        setCanEdit(editPermission.hasPermission);
-        setCanDelete(deletePermission.hasPermission);
-      } catch (error) {
-        console.error('Error checking permissions:', error);
-        setCanEdit(false);
-        setCanDelete(false);
-      } finally {
-        setPermissionsLoading(false);
-      }
-    };
-
-    checkPermissions();
-  }, [user, planet.id]);
 
   if (viewMode === 'list') {
     return (

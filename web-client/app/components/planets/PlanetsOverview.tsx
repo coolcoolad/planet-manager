@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Planet, User } from '../../types/api';
+import { Planet, User, Permission } from '../../types/api';
 import { planetService } from '../../services';
+import { permissionService } from '../../services/permission.service';
 import { PlanetCard } from './PlanetCard';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 
@@ -9,10 +10,21 @@ interface PlanetOverviewProps {
   onNavigate: (route: string) => void;
 }
 
+// Utility function to check permissions
+const hasPermission = (permissions: Permission[], resource: string, action: string, resourceId?: number): boolean => {
+  return permissions.some(permission => 
+    permission.resource === resource && 
+    permission.action === action && 
+    (!permission.planetId || permission.planetId === resourceId)
+  );
+};
+
 export const PlanetsOverview: React.FC<PlanetOverviewProps> = ({ user, onNavigate }) => {
   const [planets, setPlanets] = useState<Planet[]>([]);
   const [filteredPlanets, setFilteredPlanets] = useState<Planet[]>([]);
+  const [userPermissions, setUserPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [permissionsLoading, setPermissionsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -33,6 +45,28 @@ export const PlanetsOverview: React.FC<PlanetOverviewProps> = ({ user, onNavigat
 
     fetchPlanets();
   }, []);
+
+  useEffect(() => {
+    const fetchUserPermissions = async () => {
+      if (!user) {
+        setUserPermissions([]);
+        return;
+      }
+
+      try {
+        setPermissionsLoading(true);
+        const permissions = await permissionService.getUserPermissions(user.id);
+        setUserPermissions(permissions);
+      } catch (error) {
+        console.error('Failed to fetch user permissions:', error);
+        setUserPermissions([]);
+      } finally {
+        setPermissionsLoading(false);
+      }
+    };
+
+    fetchUserPermissions();
+  }, [user]);
 
   useEffect(() => {
     let filtered = planets;
@@ -75,6 +109,14 @@ export const PlanetsOverview: React.FC<PlanetOverviewProps> = ({ user, onNavigat
     } finally {
       setDeleteConfirm({ isOpen: false });
     }
+  };
+
+  const canEditPlanet = (planetId: number): boolean => {
+    return hasPermission(userPermissions, 'Planet', 'Update', planetId);
+  };
+
+  const canDeletePlanet = (planetId: number): boolean => {
+    return hasPermission(userPermissions, 'Planet', 'Delete', planetId);
   };
 
   return (
@@ -152,6 +194,9 @@ export const PlanetsOverview: React.FC<PlanetOverviewProps> = ({ user, onNavigat
               planet={planet}
               viewMode={viewMode}
               user={user}
+              canEdit={canEditPlanet(planet.id)}
+              canDelete={canDeletePlanet(planet.id)}
+              permissionsLoading={permissionsLoading}
               onViewDetails={() => onNavigate(`/planets/${planet.id}`)}
               onEdit={() => onNavigate(`/planets/${planet.id}/edit`)}
               onEvaluate={() => onNavigate(`/evaluation/new?planets=${planet.id}`)}

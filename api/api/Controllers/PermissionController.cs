@@ -55,10 +55,7 @@ public class PermissionController : ControllerBase
             return Forbid();
         var currentUser = await _unitOfWork.Users.GetByIdAsync(currentUserId);
 
-        if (!await _permissionService.CheckPermissionAsync(userId, "Permission", "Read"))
-            return Forbid();
-
-        var permissions = await _unitOfWork.Permissions.GetByUserIdAsync(currentUserId);
+        var permissions = await _unitOfWork.Permissions.Get(x => x.Role == currentUser.Role);
         return Ok(permissions);
     }
 
