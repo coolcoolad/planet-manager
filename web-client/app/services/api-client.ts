@@ -2,7 +2,7 @@ class ApiClient {
   private baseUrl: string;
   private accessToken?: string;
 
-  constructor(baseUrl: string = 'https://localhost:7115/api') {
+  constructor(baseUrl: string = process.env.API_BASE_URL || '') {
     this.baseUrl = baseUrl;
   }
 

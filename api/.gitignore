@@ -194,3 +194,4 @@ Thumbs.db
 
 appsettings.*
 TestData.sql
+api/Properties/PublishProfiles
