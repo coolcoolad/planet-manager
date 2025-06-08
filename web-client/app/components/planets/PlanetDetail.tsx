@@ -14,7 +14,7 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
   const [factors, setFactors] = useState<PlanetFactor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'factors' | 'evaluations'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'factors' | 'evaluations'>('factors');
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [canUpdate, setCanUpdate] = useState(false);
@@ -117,6 +117,33 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
       [FactorCategory.Other]: 'Other'
     };
     return categoryMap[category] || 'Unknown';
+  };
+
+  const getCategoryColor = (category: FactorCategory) => {
+    const colorMap = {
+      [FactorCategory.Physical]: 'bg-blue-100 text-blue-800 border-blue-200',
+      [FactorCategory.Chemical]: 'bg-green-100 text-green-800 border-green-200',
+      [FactorCategory.Biological]: 'bg-purple-100 text-purple-800 border-purple-200',
+      [FactorCategory.Environmental]: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      [FactorCategory.Other]: 'bg-gray-100 text-gray-800 border-gray-200'
+    };
+    return colorMap[category] || 'bg-gray-100 text-gray-800 border-gray-200';
+  };
+
+  const formatFactorValue = (factor: PlanetFactor) => {
+    if (factor.value !== null && factor.value !== undefined) {
+      return `${factor.value}${factor.unit ? ` ${factor.unit}` : ''}`;
+    }
+    
+    try {
+      const jsonValue = JSON.parse(factor.valueJson || '{}');
+      if (typeof jsonValue === 'object' && jsonValue !== null) {
+        return JSON.stringify(jsonValue);
+      }
+      return `${jsonValue}${factor.unit ? ` ${factor.unit}` : ''}`;
+    } catch {
+      return factor.valueJson || 'N/A';
+    }
   };
 
   const groupFactorsByCategory = () => {
@@ -319,17 +346,17 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
 
           {activeTab === 'factors' && (
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
+              {/* <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium text-gray-900">Planet Factors</h3>
-                {/* {user && (
+                {user && canUpdate && (
                   <button
                     onClick={() => onNavigate(`/Factors?planetId=${planet.id}`)}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm transition-colors"
                   >
                     Add New Factor
                   </button>
-                )} */}
-              </div>
+                )}
+              </div> */}
 
               {factors.length === 0 ? (
                 <div className="text-center py-8">
@@ -341,26 +368,60 @@ export const PlanetDetail: React.FC<PlanetDetailProps> = ({ user, planetId, onNa
                 <div className="space-y-6">
                   {Object.entries(groupFactorsByCategory()).map(([category, categoryFactors]) => (
                     <div key={category}>
-                      <h4 className="font-medium text-gray-900 mb-3">{category} Factors</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+                        <span className={`px-2 py-1 rounded-md text-xs font-medium mr-2 ${getCategoryColor(categoryFactors[0]?.category)}`}>
+                          {category}
+                        </span>
+                        <span className="text-gray-500">({categoryFactors.length} factors)</span>
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                         {categoryFactors.map((factor) => (
-                          <div key={factor.id} className="bg-gray-50 rounded-lg p-4">
-                            <div className="flex justify-between items-start mb-2">
-                              <h5 className="font-medium text-gray-900">{factor.factorName}</h5>
-                              <span className="text-sm text-gray-500">Weight: {factor.weight}</span>
-                            </div>
-                            <div className="text-sm">
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Value:</span>
-                                <span className="font-medium">
-                                  {factor.value?.toString() || 'N/A'} {factor.unit && `${factor.unit}`}
+                          <div key={factor.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start mb-3">
+                              <div className="flex-1">
+                                <h5 className="font-semibold text-gray-900 text-sm mb-1">{factor.factorName}</h5>
+                                <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(factor.category)}`}>
+                                  {getCategoryName(factor.category)}
                                 </span>
                               </div>
-                              {factor.description && (
-                                <p className="text-gray-600 mt-2">{factor.description}</p>
+                              {user && canUpdate && (
+                                <button
+                                  onClick={() => onNavigate(`/planets/${planet.id}/factors/${factor.id}/edit`)}
+                                  className="ml-2 p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors border border-blue-200 hover:border-blue-300"
+                                  title="Edit factor"
+                                >
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </button>
                               )}
-                              <div className="text-xs text-gray-400 mt-2">
-                                Recorded: {new Date(factor.recordedAt).toLocaleDateString()}
+                            </div>
+                            
+                            <div className="space-y-2 text-sm">
+                              <div className="bg-gray-50 rounded-md p-3">
+                                <div className="flex justify-between items-center mb-1">
+                                  <span className="text-gray-500 font-medium">Value:</span>
+                                  <span className="font-semibold text-gray-900">
+                                    {formatFactorValue(factor)}
+                                  </span>
+                                </div>
+                                {factor.weight !== 1.0 && (
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500">Weight:</span>
+                                    <span className="text-gray-700">{factor.weight}</span>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {factor.description && (
+                                <div className="text-gray-600 text-xs leading-relaxed">
+                                  <span className="font-medium text-gray-700">Description:</span> {factor.description}
+                                </div>
+                              )}
+                              
+                              <div className="flex justify-between text-xs text-gray-400 pt-2 border-t border-gray-100">
+                                <span>Recorded: {new Date(factor.recordedAt).toLocaleDateString()}</span>
+                                {factor.recordedBy && <span>By: {factor.recordedBy}</span>}
                               </div>
                             </div>
                           </div>

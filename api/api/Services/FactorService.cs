@@ -25,7 +25,7 @@ public class FactorService
 
     public async Task<PlanetFactor> AddFactorAsync(PlanetFactor factor, int userId)
     {
-        if (!await _permissionService.CheckPermissionAsync(userId, "Planet", "Read", factor.PlanetId))
+        if (!await _permissionService.CheckPermissionAsync(userId, "Planet", "Update", factor.PlanetId))
             throw new UnauthorizedAccessException("Insufficient permissions to add factor");
 
         factor.RecordedAt = DateTime.UtcNow;
@@ -41,7 +41,7 @@ public class FactorService
         if (existingFactor == null)
             throw new ArgumentException("Factor not found");
 
-        if (!await _permissionService.CheckPermissionAsync(userId, "Planet", "Read", factor.PlanetId))
+        if (!await _permissionService.CheckPermissionAsync(userId, "Planet", "Update", factor.PlanetId))
             throw new UnauthorizedAccessException("Insufficient permissions to update factor");
 
         factor.PlanetId = existingFactor.PlanetId; // Ensure planet ID doesn't change
@@ -57,7 +57,7 @@ public class FactorService
         var factor = await _unitOfWork.PlanetFactors.GetByIdAsync(factorId);
         if (factor == null) return false;
 
-        if (!await _permissionService.CheckPermissionAsync(userId, "Planet", "Read", factor.PlanetId))
+        if (!await _permissionService.CheckPermissionAsync(userId, "Planet", "Update", factor.PlanetId))
             throw new UnauthorizedAccessException("Insufficient permissions to delete factor");
 
         return await _unitOfWork.PlanetFactors.DeleteAsync(factorId);

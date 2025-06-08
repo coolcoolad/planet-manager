@@ -31,8 +31,12 @@ public class AddFactorRequest
 
 public class UpdateFactorRequest
 {
+    public string FactorName { get; set; } = string.Empty;
+    public FactorCategory Category { get; set; }
     public object Value { get; set; } = new();
-    public double Weight { get; set; }
+    public string Unit { get; set; } = string.Empty;
+    public FactorType DataType { get; set; }
+    public double Weight { get; set; } = 1.0;
     public string Description { get; set; } = string.Empty;
 }
 

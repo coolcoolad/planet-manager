@@ -5,7 +5,7 @@ import { PlanetsOverview, PlanetDetail, PlanetEditForm, PlanetNewForm } from './
 import { EvaluationForm } from './components/evaluation/EvaluationForm';
 import { EvaluationDetail } from './components/evaluation/EvaluationDetail';
 import { EvaluationsOverview } from './components/evaluation/EvaluationsOverview';
-import { FactorForm } from './components/factors/FactorForm';
+import { FactorForm, FactorEdit } from './components/factors';
 import { LoginForm } from './components/auth/LoginForm';
 import { User } from './types/api';
 import { apiClient, authService } from './services';
@@ -150,6 +150,20 @@ export const App: React.FC = () => {
         <EvaluationDetail
           evaluationId={parseInt(evaluationId)}
           onBack={() => setCurrentRoute('/evaluation')}
+        />
+      );
+    }
+
+    // Edit factor route
+    const factorEditMatch = matchRoute('/planets/:planetid/factors/:factorid/edit', currentRoute);
+    if (factorEditMatch) {
+      const [planetId, factorId] = factorEditMatch;
+      return (
+        <FactorEdit
+          user={user}
+          factorId={factorId}
+          planetId={planetId}
+          onNavigate={handleNavigate}
         />
       );
     }

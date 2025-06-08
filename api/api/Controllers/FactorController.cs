@@ -63,7 +63,12 @@ public class FactorController : ControllerBase
             var factor = new PlanetFactor
             {
                 Id = factorId,
+                PlanetId = planetId,
+                FactorName = request.FactorName,
+                Category = request.Category,
                 Value = request.Value,
+                Unit = request.Unit,
+                DataType = request.DataType,
                 Weight = request.Weight,
                 Description = request.Description
             };

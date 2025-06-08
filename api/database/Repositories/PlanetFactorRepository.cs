@@ -30,7 +30,18 @@ public class PlanetFactorRepository : IPlanetFactorRepository
 
     public async Task<PlanetFactor> UpdateAsync(PlanetFactor factor)
     {
-        _context.PlanetFactors.Update(factor);
+        var tracked = _context.ChangeTracker.Entries<PlanetFactor>()
+            .FirstOrDefault(e => e.Entity.Id == factor.Id);
+        
+        if (tracked != null)
+        {
+            _context.Entry(tracked.Entity).CurrentValues.SetValues(factor);
+        }
+        else
+        {
+            _context.Entry(factor).State = EntityState.Modified;
+        }
+        
         await _context.SaveChangesAsync();
         return factor;
     }
